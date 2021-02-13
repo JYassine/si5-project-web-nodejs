@@ -1,14 +1,22 @@
-const express = require('express');
+import express from 'express';
+import {getIncidentRatesDailyFrance} from "../mongoDbModule.js";
+
 const incidentRateRouter = express.Router();
-var connectionMongoDb = require('../mongoDbModule.js');
 
 /**
  * Get all incident rates
  * can be filtered by gender, date and age
  */
-incidentRateRouter.get('/'
-    , (req, res, next) => {
+incidentRateRouter.get('/', async (req, res) => {
+    try {
+        const results = await getIncidentRatesDailyFrance();
+        return res.status(200).send(results);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).send(err);
+    }
 
-        return res.status(200).json("Incident Rate endpoint")
-    });
-module.exports = incidentRateRouter;
+
+});
+
+export default incidentRateRouter;

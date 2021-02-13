@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
 
 const publicRouter = express.Router();
-const incidentRateRoute = require('./routes/incidentRate');
+import incidentRateRoute from './routes/incidentRate.js'
 
 publicRouter.use('/incidentRates', incidentRateRoute);
 
-module.exports = publicRouter;
+// module.exports = publicRouter;
+export default publicRouter;
