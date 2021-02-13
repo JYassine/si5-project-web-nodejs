@@ -1,6 +1,5 @@
-const express = require('express');
+import express from 'express';
 const incidentRateRouter = express.Router();
-var connectionMongoDb = require('../mongoDbModule.js');
 
 /**
  * Get all incident rates
@@ -11,4 +10,5 @@ incidentRateRouter.get('/'
 
         return res.status(200).json("Incident Rate endpoint")
     });
-module.exports = incidentRateRouter;
+
+export default incidentRateRouter;
