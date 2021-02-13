@@ -1,14 +1,18 @@
 import MongoClientObject from 'mongodb';
-import {convertCSVtoJSON} from "./utils/converter.js";
+import { convertCSVtoJSON } from "./utils/converter.js";
+import { dbUrl } from "./server.js";
+
+const TAUX_INC_Q_FRA = 'taux-inc-q-fra';
+
 const MongoClient = MongoClientObject.MongoClient;
 
-export const createCollections = async (url) => {
-    const client = new MongoClient(url, {useUnifiedTopology: true});
+export const createCollections = async () => {
+    const client = new MongoClient(dbUrl, {useUnifiedTopology: true});
 
     try {
         await client.connect();
         const database = client.db(process.env.DBNAME);
-        const collection = database.collection('taux-inc-q-fra');
+        const collection = database.collection(TAUX_INC_Q_FRA);
 
         try {
             await collection.drop();
@@ -27,14 +31,14 @@ export const createCollections = async (url) => {
 };
 
 export const getIncidentRatesDailyFrance = async () => {
-    const client = new MongoClient(url, {useUnifiedTopology: true});
+    const client = new MongoClient(dbUrl, {useUnifiedTopology: true});
 
     try {
         await client.connect();
         const database = client.db(process.env.DBNAME);
-        const collection = database.collection('taux-inc-q-fra');
+        const collection = database.collection(TAUX_INC_Q_FRA);
 
-        return await collection.find({});
+        return await collection.find().toArray();
     } catch (err) {
         console.log(err);
     } finally {
