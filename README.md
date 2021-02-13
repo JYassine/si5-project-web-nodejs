@@ -11,11 +11,24 @@
 
 ## Partie client : (ReactJS)
 
-- choisir une librairie pour gérer le front (bootstrap ou autres librairie)
-- Choisir une librairie permettant de faire des graphiques (2D ou 3D)
-- Choisir les figures les plus intéressantes (bar, line,etc...)
-- Récuperer et afficher les données dans les figures
-- ajouter d'autres fonctionnalités qui seraient cool pour l'utilisateur
+### Visualisation : Afficher les données en mode 
+- liste (Table)
+- graph
+- carte (google map ou MapBox ou autres)
+
+
+### Filtres : Offrir la possibilité d'affiner les résultats avec des filtres 
+Exemples : ville, département, tranche d’âge
+
+### Thème : Possibilité pour l'utilisateur de changer le thème de l'application aux moins deux thèmes (un light et un dark) 
+Le choix sera sauvegardé, si je recharge la page le thème est le même.
+Si le thème du système d'exploitation de l'utilisateur et que le navigateur supporte l'API (match-media prefers-color-scheme) est en mode dark automatiquement proposé de changer de thème (via une modal)
+
+### HTML5 : Utilisé l'API du navigateur pour détecter la région et afficher les statistiques correspondantes 
+
+
+### Afficher le nombre de cas confirmés en france par exemple (sur toutes les pages) rafraîchi régulièrement
+
 
 ## Règles sur le git :
 
