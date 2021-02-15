@@ -4,7 +4,13 @@ import { Header } from "./components/Header.js";
 
 function App() {
   const [themeChanged, setTheme] = useState(() => {
-    return JSON.parse(window.localStorage.getItem("theme"));
+    let theme = JSON.parse(window.localStorage.getItem("theme"));
+    let themeExist = theme !== null;
+    let lightMode = false;
+    if (themeExist) {
+      return theme;
+    }
+    return lightMode;
   });
   const handleChangeMode = (e) => {
     const changeTheme = !!e.target.checked;

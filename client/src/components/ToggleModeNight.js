@@ -8,8 +8,6 @@ import './ToggleModeNight.scss';
 
 export const ToggleModeNight = ({ mode, onChange }) => (
 	<div className="ToggleModeNight">
-
-		{console.log("toogle" + mode)}
 		<Toggle
 			id="mode"
 			icons={{
