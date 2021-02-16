@@ -1,6 +1,6 @@
-import React from 'react';
-import './App.css';
-import {Header} from "./components/Header.js";
+
+import './App.scss';
+import { Header } from "./components/Header.js";
 import { BrowserRouter } from 'react-router-dom';
 import { Menu } from './components/Menu.js';
 import "./App.scss";
@@ -23,14 +23,12 @@ function App() {
   };
   return (
     <div className={`App ${themeChanged ? "dark" : "light"}`}>
-        <Header onChange={handleChangeMode} mode={themeChanged} />
-        <BrowserRouter>
-            <Menu />
-        </BrowserRouter>
+      <Header onChange={handleChangeMode} mode={themeChanged} />
+      <BrowserRouter>
+        <Menu mode={themeChanged}/>
+      </BrowserRouter>
     </div>
   );
-    );
-            
 }
 
 export default App;
