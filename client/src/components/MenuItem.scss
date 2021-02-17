@@ -1,9 +1,7 @@
-
-
 .menu-item {
     align-items: center;
     // justify-content: center;
-    padding: 1.2em 0 1.2em 1em;
+    padding: 2.2em 1em 2.2em 1em;
     font-size: 1.2rem;
     
     &.light {
@@ -21,5 +19,16 @@
     &.dark:hover {
         background-color: #353b46;
     }
+
+
+    &.closed #menu-text {
+        display: none;
+    }
 }
+
+#menu-text {
+    margin-left: 1em;
+}
+
+
 

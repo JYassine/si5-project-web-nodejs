@@ -16,16 +16,23 @@ function App() {
     }
     return lightMode;
   });
+  const [isOpen, setIsOpen] = useState(true);
+
   const handleChangeMode = (e) => {
     const changeTheme = !!e.target.checked;
     window.localStorage.setItem("theme", changeTheme);
     setTheme(changeTheme);
   };
+
+  const handleMenu = () => {
+    setIsOpen(!isOpen);
+  }
+
   return (
     <div className={`App ${themeChanged ? "dark" : "light"}`}>
-      <Header onChange={handleChangeMode} mode={themeChanged} />
+      <Header onChange={handleChangeMode} mode={themeChanged} toggleMenu={handleMenu} />
       <BrowserRouter>
-        <Menu mode={themeChanged}/>
+        <Menu mode={themeChanged} isOpen={isOpen}/>
       </BrowserRouter>
     </div>
   );
