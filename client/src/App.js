@@ -1,9 +1,9 @@
-
-import './App.scss';
-import { Header } from "./components/Header.js";
-import { BrowserRouter } from 'react-router-dom';
-import { Menu } from './components/Menu.js';
 import "./App.scss";
+import { Header } from "./components/Header.js";
+import { BrowserRouter } from "react-router-dom";
+import { Menu } from "./components/Menu.js";
+import "./App.scss";
+import { Graph } from "./components/Graph.js";
 import React, { useState } from "react";
 
 function App() {
@@ -26,14 +26,19 @@ function App() {
 
   const handleMenu = () => {
     setIsOpen(!isOpen);
-  }
+  };
 
   return (
     <div className={`App ${themeChanged ? "dark" : "light"}`}>
-      <Header onChange={handleChangeMode} mode={themeChanged} toggleMenu={handleMenu} />
+      <Header
+        onChange={handleChangeMode}
+        mode={themeChanged}
+        toggleMenu={handleMenu}
+      />
       <BrowserRouter>
-        <Menu mode={themeChanged} isOpen={isOpen}/>
+        <Menu mode={themeChanged} isOpen={isOpen} />
       </BrowserRouter>
+      <Graph> </Graph>
     </div>
   );
 }
