@@ -1,0 +1,35 @@
+.header-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-content: center;
+  background-color: #282c34;
+  width: 100%;
+  padding-left: 1em;
+  padding-right: 1em;
+  color: whitesmoke;
+
+
+  & .app-title {
+    font-size: 1.5em;
+   font-weight: bold;
+  }
+
+  & .ToggleModeNight {
+   right: 1em;
+   align-self: center;
+   position: absolute;
+  }
+}
+
+.menu-button {
+  left: 1em;
+  position: absolute;
+  background-color: #282c34;
+  border: none;
+  outline: none;
+
+  &:hover, &:active, &:focus, &:active:focus:not(:disabled):not(:disabled) {
+    background-color: #282c34;
+  }
+}

@@ -1,0 +1,17 @@
+.menu {
+    &.light {
+        background-color: #ebeef0;
+    }
+
+    &.dark {
+        background-color: #282c34;
+    }
+
+    // width: 15%;
+    // height: 100%;
+
+    &.closed {
+        width: min-content;
+    }
+    
+}
