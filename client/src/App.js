@@ -1,12 +1,12 @@
-
-import './App.scss';
+import "./App.scss";
 import { Header } from "./components/Header.js";
-import { CovidInfoCard } from './components/CovidInfoCard.js';
-import { BrowserRouter } from 'react-router-dom';
-import { Menu } from './components/Menu.js';
-import { Container, Row, Col } from 'reactstrap';
+import { CovidInfoCard } from "./components/CovidInfoCard.js";
+import { BrowserRouter } from "react-router-dom";
+import { Menu } from "./components/Menu.js";
+import { Container, Row, Col } from "reactstrap";
 import "./App.scss";
 import React, { useState } from "react";
+import { Filter } from "./components/Filter";
 
 function App() {
   const [themeChanged, setTheme] = useState(() => {
@@ -28,11 +28,15 @@ function App() {
 
   const handleMenu = () => {
     setIsOpen(!isOpen);
-  }
+  };
 
   return (
     <div className={`App ${themeChanged ? "dark" : "light"}`}>
-      <Header onChange={handleChangeMode} mode={themeChanged} toggleMenu={handleMenu} />
+      <Header
+        onChange={handleChangeMode}
+        mode={themeChanged}
+        toggleMenu={handleMenu}
+      />
       <BrowserRouter>
         <Container className="justify-content-left" fluid={true}>
           <Row>
@@ -41,17 +45,14 @@ function App() {
             </Col>
             <Col className="content-col mt-3" md="10">
               <Row className="covid-info justify-content-center">
-                <CovidInfoCard mode={themeChanged}/>
+                <CovidInfoCard mode={themeChanged} />
               </Row>
               <Row className="covid-content ml-5 mr-5">
-                <p>Liste, graph etc ici</p>
+                <Filter mode={themeChanged}></Filter>
               </Row>
             </Col>
           </Row>
-
-
         </Container>
-
       </BrowserRouter>
     </div>
   );
