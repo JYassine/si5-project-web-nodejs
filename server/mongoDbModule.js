@@ -3,6 +3,7 @@ import { convertCSVtoJSON } from "./utils/converter.js";
 import { dbUrl } from "./server.js";
 
 const TAUX_INC_Q_FRA = "taux-inc-q-fra";
+const TAUX_INC_Q_REG = "taux-inc-q-reg";
 
 const MongoClient = MongoClientObject.MongoClient;
 
@@ -12,7 +13,9 @@ export const createCollections = async () => {
   try {
     await client.connect();
     const database = client.db(process.env.DBNAME);
-    const collection = database.collection(TAUX_INC_Q_FRA);
+
+    // Fill taux-inc-q-fra collection 
+    let collection = database.collection(TAUX_INC_Q_FRA);
 
     try {
       await collection.drop();
@@ -20,9 +23,24 @@ export const createCollections = async () => {
       // Osef
     }
 
-    const toInsert = await convertCSVtoJSON();
-    const result = await collection.insertMany(toInsert, { ordered: true });
-    console.log(`${result.insertedCount} documents inserted`);
+    let toInsert = await convertCSVtoJSON('fra');
+    let result = await collection.insertMany(toInsert, { ordered: true });
+    console.log(`${result.insertedCount} documents inserted in taux-inc-q-fra`);
+
+    // Fill taux-inc-q-reg collection 
+    collection = database.collection(TAUX_INC_Q_REG);
+
+    try {
+      await collection.drop();
+    } catch (e) {
+      // Osef
+    }
+
+    toInsert = await convertCSVtoJSON('reg');
+    result = await collection.insertMany(toInsert, { ordered: true });
+    console.log(`${result.insertedCount} documents inserted in taux-inc-q-reg`);
+
+
   } catch (err) {
     console.log(err);
   } finally {
