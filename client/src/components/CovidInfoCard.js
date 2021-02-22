@@ -22,13 +22,14 @@ export const CovidInfoCard = ({ mode, name }) => {
         fetch(urlToFetch)
             .then(result => result.json())
             .then(data => {
+                console.log(data)
                 switch (name) {
                     case 'totalCases':
                         setDataNumber(data.FranceGlobalLiveData[0].casConfirmes);
                         setTitle('Nombre de cas en France');
                         break;
                     case 'deces':
-                        setDataNumber(data.FranceGlobalLiveData[0].deces + data.FranceGlobalLiveData[0].decesEhpad);
+                        setDataNumber(data.FranceGlobalLiveData[0].deces);
                         setTitle('Nombre de décès');
                         break;
                     case 'decesEhpad':
