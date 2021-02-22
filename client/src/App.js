@@ -2,8 +2,10 @@
 import './App.scss';
 import { Header } from "./components/Header.js";
 import { CovidInfoCard } from './components/CovidInfoCard.js';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route } from 'react-router-dom';
 import { Menu } from './components/Menu.js';
+import { TableComponent } from './components/table/TableComponent.js';
+import { HomePageComponent } from './components/HomePageComponent.js';
 import { Container, Row, Col } from 'reactstrap';
 import "./App.scss";
 import React, { useState } from "react";
@@ -18,7 +20,7 @@ function App() {
     }
     return lightMode;
   });
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleChangeMode = (e) => {
     const changeTheme = !!e.target.checked;
@@ -36,15 +38,20 @@ function App() {
       <BrowserRouter>
         <Container className="justify-content-left" fluid={true}>
           <Row>
-            <Col className="menu-col pl-0" md="2">
-              <Menu mode={themeChanged} isOpen={isOpen} />
+            <Col className={`menu-col pl-0 col-12 ${isOpen ? 'col-lg-2' : 'col-lg-1'}`} >
+              <Menu  mode={themeChanged} isOpen={isOpen} />
             </Col>
-            <Col className="content-col mt-3" md="10">
+            <Col className="content-col mt-3 col-10" >
               <Row className="covid-info justify-content-center">
-                <CovidInfoCard mode={themeChanged}/>
+                <CovidInfoCard mode={themeChanged} name="totalCases" />
               </Row>
               <Row className="covid-content ml-5 mr-5">
-                <p>Liste, graph etc ici</p>
+                <Route exact path='/list'>
+                  <TableComponent mode={themeChanged} />
+                </Route>
+                <Route exact path='/'>
+                  <HomePageComponent mode={themeChanged} />
+                </Route>
               </Row>
             </Col>
           </Row>
