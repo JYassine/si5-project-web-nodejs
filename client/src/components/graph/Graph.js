@@ -32,6 +32,7 @@ export const Graph = ({ mode, dataFilter }) => {
         <Legend />
         <Line type="monotone" dataKey="P_h" stroke="#1014DE" />
         <Line type="monotone" dataKey="P_f" stroke="#C71585" />
+        <Line type="monotone" dataKey="P" stroke="#F51604" />
       </LineChart>
     </ResponsiveContainer>
   );

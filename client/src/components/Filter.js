@@ -10,7 +10,6 @@ import {
   DropdownItem,
 } from "reactstrap";
 import { Row, Col } from "reactstrap";
-import { Slider } from "@material-ui/core";
 import "./Filter.scss";
 import axios from "axios";
 import configServer from "../configServer.json";
@@ -19,14 +18,27 @@ export const Filter = ({ mode, onChange }) => {
   const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
   const [months, setMonths] = useState([""]);
   const [dropdownOpenYear, setDropdownOpenYear] = useState(false);
-
   const [dropdownOpenRegion, setDropdownOpenRegion] = useState(false);
-  const [genderFilter, setGenderFilter] = useState("h");
+  const [dropdownOpenAge, setDropdownOpenAge] = useState(false);
+  const [genderFilter, setGenderFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
   const [ageFilter, setAgeFilter] = useState(0);
   const [yearFilter, setYearFilter] = useState(2020);
   const [regions, setRegions] = useState([""]);
+
+  const classAges = [
+    { age: 0, text: "All age" },
+    { age: 19, text: "10-19" },
+    { age: 29, text: "20-29" },
+    { age: 39, text: "30-39" },
+    { age: 49, text: "40-49" },
+    { age: 59, text: "50-59" },
+    { age: 69, text: "60-69" },
+    { age: 79, text: "70-79" },
+    { age: 89, text: "80-89" },
+    { age: 90, text: "90+" },
+  ];
 
   useEffect(async () => {
     fetchRegions();
@@ -60,17 +72,13 @@ export const Filter = ({ mode, onChange }) => {
   };
   const fetchDataCovid = async () => {
     let result = undefined;
-    let age =
-      (ageFilter === 90) | (ageFilter === 0)
-        ? ageFilter
-        : parseInt(ageFilter) + 9;
     let filter =
       "?gender=" +
       genderFilter +
       "&month=" +
       monthFilter +
       "&age=" +
-      age +
+      ageFilter +
       "&year=" +
       yearFilter +
       "&region=" +
@@ -81,10 +89,19 @@ export const Filter = ({ mode, onChange }) => {
       .catch((err) => {
         console.error(err);
       });
+
     result.data.forEach((data) => {
-      data.P_h = parseInt(data.P_h);
-      data.P_f = parseInt(data.P_f);
-      data.P = parseInt(data.P);
+      if (data.P_h) {
+        data.P_h = parseInt(data.P_h);
+      }
+      if (data.P_f) {
+        data.P_f = parseInt(data.P_f);
+      }
+      if (data.P) {
+        data.P = parseInt(data.P);
+        delete data.P_f;
+        delete data.P_h;
+      }
     });
     return result.data;
   };
@@ -95,6 +112,8 @@ export const Filter = ({ mode, onChange }) => {
 
   const toggleRegion = () => setDropdownOpenRegion((prevState) => !prevState);
 
+  const toggleAge = () => setDropdownOpenAge((prevState) => !prevState);
+
   const handleGenderFilter = async (e) => {
     setGenderFilter(e.target.value);
   };
@@ -103,8 +122,8 @@ export const Filter = ({ mode, onChange }) => {
     setMonthFilter(e.target.value);
   };
 
-  const handleAgeFilter = async (e, val) => {
-    setAgeFilter(val);
+  const handleAgeFilter = async (e) => {
+    setAgeFilter(e.target.value);
   };
 
   const handleYearFilter = async (e) => {
@@ -165,6 +184,21 @@ export const Filter = ({ mode, onChange }) => {
     return <DropdownMenu>{listRegions}</DropdownMenu>;
   }
 
+  function AgeSelect() {
+    const listClassAge = classAges.map((age) => {
+      return (
+        <DropdownItem
+          key={regions.indexOf(age)}
+          onClick={handleAgeFilter}
+          value={age.age}
+        >
+          {age.text}
+        </DropdownItem>
+      );
+    });
+    return <DropdownMenu>{listClassAge}</DropdownMenu>;
+  }
+
   return (
     <div className={`filter ${mode ? "dark" : "light"}`}>
       <Card className={`filter-card ${mode ? "dark" : "light"}`}>
@@ -182,6 +216,7 @@ export const Filter = ({ mode, onChange }) => {
             <Col>
               <GendersButton
                 genders={[
+                  { gender: "All", value: "", key: 0, color: "#F51604" },
                   { gender: "Male", value: "h", key: 1, color: "#1014DE" },
                   { gender: "Female", value: "f", key: 2, color: "#C71585" },
                 ]}
@@ -190,18 +225,11 @@ export const Filter = ({ mode, onChange }) => {
           </Row>
           <Row>
             <Col>
-              <h2> Age </h2>
-              <Slider
-                className="filter-slider"
-                defaultValue={0}
-                onChange={handleAgeFilter}
-                aria-labelledby="discrete-slider"
-                valueLabelDisplay="auto"
-                step={10}
-                marks
-                min={0}
-                max={90}
-              />
+              <h2>Age</h2>
+              <Dropdown isOpen={dropdownOpenAge} toggle={toggleAge}>
+                <DropdownToggle caret> {ageFilter}</DropdownToggle>
+                <AgeSelect />
+              </Dropdown>
             </Col>
           </Row>
 
