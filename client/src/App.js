@@ -51,7 +51,7 @@ function App() {
             </Col>
             <Col className="content-col mt-3 col-10">
               <Row className="covid-info justify-content-center">
-                <CovidInfoCard mode={themeChanged} name="totalCases" />
+                <CovidInfoCard mode={themeChanged} name="totalCases" data={-1}/>
               </Row>
               <Row className="covid-content ml-5 mr-5">
                 <Route exact path="/list">
