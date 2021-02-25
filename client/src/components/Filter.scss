@@ -1,0 +1,21 @@
+.filter {
+  &.light {
+    background-color: #ebeef0;
+  }
+
+  &.dark {
+    background-color: #282c34;
+  }
+  .filter-card {
+    &.light {
+      background-color: #ebeef0;
+    }
+
+    &.dark {
+      background-color: #282c34;
+    }
+  }
+  .filter-slider {
+    width: 180px;
+  }
+}
