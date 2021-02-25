@@ -14,7 +14,7 @@ export const createCollections = async () => {
     await client.connect();
     const database = client.db(process.env.DBNAME);
 
-    // Fill taux-inc-q-fra collection 
+    // Fill taux-inc-q-fra collection
     let collection = database.collection(TAUX_INC_Q_FRA);
 
     try {
@@ -23,11 +23,11 @@ export const createCollections = async () => {
       // Osef
     }
 
-    let toInsert = await convertCSVtoJSON('fra');
+    let toInsert = await convertCSVtoJSON("fra");
     let result = await collection.insertMany(toInsert, { ordered: true });
     console.log(`${result.insertedCount} documents inserted in taux-inc-q-fra`);
 
-    // Fill taux-inc-q-reg collection 
+    // Fill taux-inc-q-reg collection
     collection = database.collection(TAUX_INC_Q_REG);
 
     try {
@@ -36,11 +36,9 @@ export const createCollections = async () => {
       // Osef
     }
 
-    toInsert = await convertCSVtoJSON('reg');
+    toInsert = await convertCSVtoJSON("reg");
     result = await collection.insertMany(toInsert, { ordered: true });
     console.log(`${result.insertedCount} documents inserted in taux-inc-q-reg`);
-
-
   } catch (err) {
     console.log(err);
   } finally {
@@ -90,7 +88,10 @@ export const getIncidentRatesDailyFranceWithFilterAge = async (age, region) => {
   }
 };
 
-export const getIncidentRatesDailyFranceWithFilterGender = async (gender, region) => {
+export const getIncidentRatesDailyFranceWithFilterGender = async (
+  gender,
+  region
+) => {
   const dbToSearch = region ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
   let collection = [];
@@ -118,7 +119,10 @@ export const getIncidentRatesDailyFranceWithFilterGender = async (gender, region
   }
 };
 
-export const getIncidentRatesDailyFranceWithFilterMonth = async (month, region) => {
+export const getIncidentRatesDailyFranceWithFilterMonth = async (
+  month,
+  region
+) => {
   const dbToSearch = region ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
   let collection = [];
@@ -171,10 +175,13 @@ const findDocumentWithFilterQueryColumn = async (
       .toArray();
   }
   return cursor;
-
 };
 
-const findDocumentWithFilterQuery = async (collection, columnToExclude, region) => {
+const findDocumentWithFilterQuery = async (
+  collection,
+  columnToExclude,
+  region
+) => {
   let projectionColumnToExclude = {};
   columnToExclude.forEach((col) => {
     projectionColumnToExclude[col] = 0;
@@ -191,7 +198,6 @@ const findDocumentWithFilterQuery = async (collection, columnToExclude, region) 
       .toArray();
   }
   return cursor;
-
 };
 
 export const getIncidentRatesDailyRegion = async (region) => {
@@ -202,7 +208,7 @@ export const getIncidentRatesDailyRegion = async (region) => {
     const database = client.db(process.env.DBNAME);
     const collection = database.collection(TAUX_INC_Q_REG);
 
-    return await collection.find({reg: region}).toArray();
+    return await collection.find({ reg: region }).toArray();
   } catch (err) {
     console.log(err);
   } finally {
@@ -210,3 +216,71 @@ export const getIncidentRatesDailyRegion = async (region) => {
   }
 };
 
+export const getMonthsForYear = async (year) => {
+  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+
+  try {
+    await client.connect();
+    const database = client.db(process.env.DBNAME);
+    const collection = database.collection(TAUX_INC_Q_REG);
+
+    let regexYear = new RegExp(year + "-");
+    const months = await findDocumentWithFilterQueryColumn(
+      collection,
+      "jour",
+      regexYear,
+      [
+        "pop",
+        "fra",
+        "pop_f",
+        "pop_h",
+        "P_h",
+        "P_f",
+        "P",
+        "reg",
+        "cl_age90",
+        "_id",
+      ]
+    );
+    let allMonths = new Set();
+    months.forEach((month) => {
+      allMonths.add(month.jour.split("-")[1]);
+    });
+    return Array.from(allMonths);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await client.close();
+  }
+};
+
+export const getAllRegions = async () => {
+  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+
+  try {
+    await client.connect();
+    const database = client.db(process.env.DBNAME);
+    const collection = database.collection(TAUX_INC_Q_REG);
+
+    const regionsData = await findDocumentWithFilterQuery(collection, [
+      "pop",
+      "fra",
+      "pop_f",
+      "pop_h",
+      "P_h",
+      "P_f",
+      "P",
+      "cl_age90",
+      "_id",
+    ]);
+    let allRegions = new Set();
+    regionsData.forEach((region) => {
+      allRegions.add(region.reg);
+    });
+    return Array.from(allRegions);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await client.close();
+  }
+};

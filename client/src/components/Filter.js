@@ -10,60 +10,109 @@ import {
   DropdownItem,
 } from "reactstrap";
 import { Row, Col } from "reactstrap";
-import { Slider } from "@material-ui/core";
 import "./Filter.scss";
 import axios from "axios";
 import configServer from "../configServer.json";
 
 export const Filter = ({ mode, onChange }) => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
+  const [months, setMonths] = useState([""]);
+  const [dropdownOpenYear, setDropdownOpenYear] = useState(false);
+  const [dropdownOpenRegion, setDropdownOpenRegion] = useState(false);
+  const [dropdownOpenAge, setDropdownOpenAge] = useState(false);
+  const [genderFilter, setGenderFilter] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
+  const [ageFilter, setAgeFilter] = useState(0);
+  const [yearFilter, setYearFilter] = useState(2020);
+  const [regions, setRegions] = useState([""]);
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+  const classAges = [
+    { age: 0, text: "All age" },
+    { age: 19, text: "10-19" },
+    { age: 29, text: "20-29" },
+    { age: 39, text: "30-39" },
+    { age: 49, text: "40-49" },
+    { age: 59, text: "50-59" },
+    { age: 69, text: "60-69" },
+    { age: 79, text: "70-79" },
+    { age: 89, text: "80-89" },
+    { age: 90, text: "90+" },
   ];
-  const toggle = () => setDropdownOpen((prevState) => !prevState);
-  const [genderFilter, setGenderFilter] = useState("h");
-  const [monthFilter, setMonthFilter] = useState("6");
-  const [ageFilter, setAgeFilter] = useState(10);
 
   useEffect(async () => {
-    const resultFiltered = await fetchDataCovid();
-    onChange(resultFiltered);
-    return resultFiltered;
-  }, [genderFilter, monthFilter, ageFilter]);
+    fetchRegions();
+    fetchMonths();
+    onChange(await fetchDataCovid());
+  }, [genderFilter, monthFilter, ageFilter, yearFilter, regionFilter]);
 
+  const fetchRegions = async () => {
+    let queryAllRegions = "/regions";
+
+    console.log(configServer.urlServer + "" + queryAllRegions);
+    const allRegions = await axios
+      .get(configServer.urlServer + "" + queryAllRegions)
+      .catch((err) => {
+        console.error(err);
+      });
+    allRegions.data.push("");
+    setRegions(allRegions.data);
+  };
+  const fetchMonths = async () => {
+    let queryAllMonths = "/months/" + yearFilter;
+
+    console.log(configServer.urlServer + "" + queryAllMonths);
+    const allMonths = await axios
+      .get(configServer.urlServer + "" + queryAllMonths)
+      .catch((err) => {
+        console.error(err);
+      });
+    allMonths.data.push("");
+    setMonths(allMonths.data);
+  };
   const fetchDataCovid = async () => {
     let result = undefined;
-    let month = monthFilter < 10 ? "0" + monthFilter : monthFilter;
-    let age =
-      (ageFilter === 90) | (ageFilter === 0)
-        ? ageFilter
-        : parseInt(ageFilter) + 9;
-    let filter = "?gender=" + genderFilter + "&month=" + month + "&age=" + age;
+    let filter =
+      "?gender=" +
+      genderFilter +
+      "&month=" +
+      monthFilter +
+      "&age=" +
+      ageFilter +
+      "&year=" +
+      yearFilter +
+      "&region=" +
+      regionFilter;
     console.log(configServer.urlServer + "" + filter);
     result = await axios
       .get(configServer.urlServer + "" + filter)
       .catch((err) => {
         console.error(err);
       });
+
     result.data.forEach((data) => {
-      data.P_h = parseInt(data.P_h);
-      data.P_f = parseInt(data.P_f);
-      data.P = parseInt(data.P);
+      if (data.P_h) {
+        data.P_h = parseInt(data.P_h);
+      }
+      if (data.P_f) {
+        data.P_f = parseInt(data.P_f);
+      }
+      if (data.P) {
+        data.P = parseInt(data.P);
+        delete data.P_f;
+        delete data.P_h;
+      }
     });
     return result.data;
   };
+
+  const toggleMonth = () => setDropdownOpenMonth((prevState) => !prevState);
+
+  const toggleYear = () => setDropdownOpenYear((prevState) => !prevState);
+
+  const toggleRegion = () => setDropdownOpenRegion((prevState) => !prevState);
+
+  const toggleAge = () => setDropdownOpenAge((prevState) => !prevState);
 
   const handleGenderFilter = async (e) => {
     setGenderFilter(e.target.value);
@@ -73,8 +122,17 @@ export const Filter = ({ mode, onChange }) => {
     setMonthFilter(e.target.value);
   };
 
-  const handleAgeFilter = async (e, val) => {
-    setAgeFilter(val);
+  const handleAgeFilter = async (e) => {
+    setAgeFilter(e.target.value);
+  };
+
+  const handleYearFilter = async (e) => {
+    setYearFilter(e.target.value);
+    setMonthFilter("");
+  };
+
+  const handleRegionFilter = async (e) => {
+    setRegionFilter(e.target.value);
   };
 
   function GendersButton(props) {
@@ -101,17 +159,44 @@ export const Filter = ({ mode, onChange }) => {
         <DropdownItem
           key={months.indexOf(month) + 1}
           onClick={handleMonthFilter}
-          value={months.indexOf(month) + 1}
+          value={month}
         >
-          {month}
+          {month === "" ? "All Month" : month}
         </DropdownItem>
       );
     });
     return <DropdownMenu>{listMonths}</DropdownMenu>;
   }
 
-  function valuetext(value) {
-    return `${value}°C`;
+  function RegionsSelect(props) {
+    const regions = props.regions;
+    const listRegions = regions.map((region) => {
+      return (
+        <DropdownItem
+          key={regions.indexOf(region) + 1}
+          onClick={handleRegionFilter}
+          value={region}
+        >
+          {region === "" ? "All Region" : region}
+        </DropdownItem>
+      );
+    });
+    return <DropdownMenu>{listRegions}</DropdownMenu>;
+  }
+
+  function AgeSelect() {
+    const listClassAge = classAges.map((age) => {
+      return (
+        <DropdownItem
+          key={regions.indexOf(age)}
+          onClick={handleAgeFilter}
+          value={age.age}
+        >
+          {age.text}
+        </DropdownItem>
+      );
+    });
+    return <DropdownMenu>{listClassAge}</DropdownMenu>;
   }
 
   return (
@@ -131,6 +216,7 @@ export const Filter = ({ mode, onChange }) => {
             <Col>
               <GendersButton
                 genders={[
+                  { gender: "All", value: "", key: 0, color: "#F51604" },
                   { gender: "Male", value: "h", key: 1, color: "#1014DE" },
                   { gender: "Female", value: "f", key: 2, color: "#C71585" },
                 ]}
@@ -139,28 +225,43 @@ export const Filter = ({ mode, onChange }) => {
           </Row>
           <Row>
             <Col>
-              <h2> Age </h2>
-              <Slider
-                className="filter-slider"
-                defaultValue={0}
-                onChange={handleAgeFilter}
-                getAriaValueText={valuetext}
-                aria-labelledby="discrete-slider"
-                valueLabelDisplay="auto"
-                step={10}
-                marks
-                min={0}
-                max={90}
-              />
+              <h2>Age</h2>
+              <Dropdown isOpen={dropdownOpenAge} toggle={toggleAge}>
+                <DropdownToggle caret> {ageFilter}</DropdownToggle>
+                <AgeSelect />
+              </Dropdown>
             </Col>
           </Row>
 
           <Row>
             <Col>
               <h2>Month</h2>
-              <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+              <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
                 <DropdownToggle caret> {monthFilter}</DropdownToggle>
                 <MonthsSelect months={months} />
+              </Dropdown>
+            </Col>
+            <Col>
+              <h2>Year</h2>
+              <Dropdown isOpen={dropdownOpenYear} toggle={toggleYear}>
+                <DropdownToggle caret> {yearFilter}</DropdownToggle>
+                <DropdownMenu>
+                  <DropdownItem key={1} onClick={handleYearFilter} value={2020}>
+                    {2020}
+                  </DropdownItem>
+
+                  <DropdownItem key={2} onClick={handleYearFilter} value={2021}>
+                    {2021}
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </Col>
+
+            <Col>
+              <h2>Region</h2>
+              <Dropdown isOpen={dropdownOpenRegion} toggle={toggleRegion}>
+                <DropdownToggle caret> {regionFilter}</DropdownToggle>
+                <RegionsSelect regions={regions} />
               </Dropdown>
             </Col>
           </Row>
