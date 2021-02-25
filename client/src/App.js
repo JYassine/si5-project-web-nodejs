@@ -5,6 +5,7 @@ import { BrowserRouter, Route } from "react-router-dom";
 import { Menu } from "./components/Menu.js";
 import { TableComponent } from "./components/table/TableComponent.js";
 import { HomePageComponent } from "./components/HomePageComponent.js";
+import { ContactPage } from './components/contact/ContactPage.js';
 import { Container, Row, Col } from "reactstrap";
 import "./App.scss";
 import React, { useState } from "react";
@@ -43,7 +44,7 @@ function App() {
         <Container className="justify-content-left" fluid={true}>
           <Row>
             <Col
-              className={`menu-col pl-0 col-12 ${
+              className={`menu-col pl-0 col-2 ${
                 isOpen ? "col-lg-2" : "col-lg-1"
               }`}
             >
@@ -62,6 +63,9 @@ function App() {
                 </Route>
                 <Route exact path="/">
                   <HomePageComponent mode={themeChanged} />
+                </Route>
+                <Route exact path="/contact">
+                  <ContactPage />
                 </Route>
               </Row>
             </Col>
