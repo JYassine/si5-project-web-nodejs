@@ -27,6 +27,12 @@ export const Filter = ({ mode, onChange }) => {
   const [yearFilter, setYearFilter] = useState(2020);
   const [regions, setRegions] = useState([""]);
 
+  const serverUrl = process.env.NODE_ENV === 'production' ?
+    configServer.urlServerProd
+    :
+    configServer.urlServer;
+
+
   const classAges = [
     { age: 0, text: "All age" },
     { age: 19, text: "10-19" },
@@ -51,7 +57,7 @@ export const Filter = ({ mode, onChange }) => {
 
     console.log(configServer.urlServer + "" + queryAllRegions);
     const allRegions = await axios
-      .get(configServer.urlServer + "" + queryAllRegions)
+      .get(serverUrl + "" + queryAllRegions)
       .catch((err) => {
         console.error(err);
       });
@@ -63,7 +69,7 @@ export const Filter = ({ mode, onChange }) => {
 
     console.log(configServer.urlServer + "" + queryAllMonths);
     const allMonths = await axios
-      .get(configServer.urlServer + "" + queryAllMonths)
+      .get(serverUrl + "" + queryAllMonths)
       .catch((err) => {
         console.error(err);
       });
@@ -85,7 +91,7 @@ export const Filter = ({ mode, onChange }) => {
       regionFilter;
     console.log(configServer.urlServer + "" + filter);
     result = await axios
-      .get(configServer.urlServer + "" + filter)
+      .get(serverUrl + "" + filter)
       .catch((err) => {
         console.error(err);
       });

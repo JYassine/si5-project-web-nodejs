@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import { Table } from 'reactstrap';
 import { Container, Row, Col } from 'reactstrap';
 import { TablePagination } from './TablePagination.js';
+import configServer from "../../configServer.json";
 
 export const TableComponent = ({ mode }) => {
     const [data, setData] = useState([]);
     const [pagesCount, setPagesCount] = useState(-1);
     const [currentPage, setCurrentPage] = useState(1);
-    const urlToFetch = 'http://localhost:4000/incidentRates';
+
+    const urlToFetch = process.env.NODE_ENV === 'production' ?
+    configServer.urlServerProd
+    :
+    configServer.urlServer;
 
     const nbResultsPerPage = 12;
 
