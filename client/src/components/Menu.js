@@ -25,6 +25,11 @@ export const Menu = ({ isOpen, mode }) => {
             name: "Carte",
             url: '/map',
             id: 4
+        },
+        {
+            name: "Contact",
+            url: '/contact',
+            id: 5
         }
     ]);
 

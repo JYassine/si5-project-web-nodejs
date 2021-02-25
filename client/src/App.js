@@ -64,6 +64,9 @@ function App() {
                 <Route exact path="/">
                   <HomePageComponent mode={themeChanged} />
                 </Route>
+                <Route exact path="/contact">
+                  <ContactPage />
+                </Route>
               </Row>
             </Col>
           </Row>

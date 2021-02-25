@@ -1,7 +1,7 @@
 import { NavLink } from "reactstrap";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faList, faChartBar, faMap } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faList, faChartBar, faMap, faEnvelopeOpen } from '@fortawesome/free-solid-svg-icons';
 import './MenuItem.scss';
 
 export const MenuItem = ({ name, url, mode, isOpen }) => {
@@ -15,6 +15,8 @@ export const MenuItem = ({ name, url, mode, isOpen }) => {
                 return <FontAwesomeIcon icon={faChartBar} className="fa faChartBar" />
             case '/map':
                 return <FontAwesomeIcon icon={faMap} className="fa faMap" />
+            case '/contact':
+                return <FontAwesomeIcon icon={faEnvelopeOpen} className="fa faEnvelopeOpen" />
             default:
                 console.log("MenuItem Error: url invalid");
 
@@ -26,7 +28,7 @@ export const MenuItem = ({ name, url, mode, isOpen }) => {
         ${mode ? 'dark' : 'light'}
         ${isOpen ? 'open' : 'closed'}`}
             tag={Link} to={url}>
-                {renderIcons(url)}
+            {renderIcons(url)}
             <span id="menu-text">{name}</span>
         </NavLink>
     )
