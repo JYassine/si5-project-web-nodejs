@@ -194,3 +194,19 @@ const findDocumentWithFilterQuery = async (collection, columnToExclude, region) 
 
 };
 
+export const getIncidentRatesDailyRegion = async (region) => {
+  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+
+  try {
+    await client.connect();
+    const database = client.db(process.env.DBNAME);
+    const collection = database.collection(TAUX_INC_Q_REG);
+
+    return await collection.find({reg: region}).toArray();
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await client.close();
+  }
+};
+

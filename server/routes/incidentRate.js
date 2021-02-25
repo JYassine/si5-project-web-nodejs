@@ -5,6 +5,7 @@ import {
   getIncidentRatesDailyFranceWithFilterAge,
   getIncidentRatesDailyFranceWithFilterGender,
   getIncidentRatesDailyFranceWithFilterMonth,
+  getIncidentRatesDailyRegion
 } from "../mongoDbModule.js";
 
 const incidentRateRouter = express.Router();
@@ -20,6 +21,7 @@ incidentRateRouter.get("/", async (req, res) => {
     let queryAge = undefined;
     let queryGender = undefined;
     let queryMonth = undefined;
+    let queryRegion = undefined;
 
 
     if (req.query) {
@@ -38,6 +40,11 @@ incidentRateRouter.get("/", async (req, res) => {
           req.query.month, req.query.region
         );
       }
+      if (req.query.region) {
+        queryRegion = await getIncidentRatesDailyRegion(
+          req.query.region
+        )
+      };
     }
     let finalResult = [];
     if (
@@ -85,8 +92,10 @@ incidentRateRouter.get("/", async (req, res) => {
       return res.status(200).json(queryGender);
     } else if (queryMonth !== undefined) {
       return res.status(200).json(queryMonth);
+    } else if (queryRegion !== undefined) {
+      return res.status(200).json(queryRegion);
     }
-    const results = await getIncidentRatesDailyFrance();
+    const results = await getIncidentRatesDailyFrance(region);
     return res.status(200).json(results);
   } catch (err) {
     return res.status(400).json(err.message);
