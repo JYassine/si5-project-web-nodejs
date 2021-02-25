@@ -3,6 +3,7 @@ import { convertCSVtoJSON } from "./utils/converter.js";
 import { dbUrl } from "./server.js";
 
 const TAUX_INC_Q_FRA = "taux-inc-q-fra";
+const TAUX_INC_Q_REG = "taux-inc-q-reg";
 
 const MongoClient = MongoClientObject.MongoClient;
 
@@ -12,7 +13,9 @@ export const createCollections = async () => {
   try {
     await client.connect();
     const database = client.db(process.env.DBNAME);
-    const collection = database.collection(TAUX_INC_Q_FRA);
+
+    // Fill taux-inc-q-fra collection 
+    let collection = database.collection(TAUX_INC_Q_FRA);
 
     try {
       await collection.drop();
@@ -20,9 +23,24 @@ export const createCollections = async () => {
       // Osef
     }
 
-    const toInsert = await convertCSVtoJSON();
-    const result = await collection.insertMany(toInsert, { ordered: true });
-    console.log(`${result.insertedCount} documents inserted`);
+    let toInsert = await convertCSVtoJSON('fra');
+    let result = await collection.insertMany(toInsert, { ordered: true });
+    console.log(`${result.insertedCount} documents inserted in taux-inc-q-fra`);
+
+    // Fill taux-inc-q-reg collection 
+    collection = database.collection(TAUX_INC_Q_REG);
+
+    try {
+      await collection.drop();
+    } catch (e) {
+      // Osef
+    }
+
+    toInsert = await convertCSVtoJSON('reg');
+    result = await collection.insertMany(toInsert, { ordered: true });
+    console.log(`${result.insertedCount} documents inserted in taux-inc-q-reg`);
+
+
   } catch (err) {
     console.log(err);
   } finally {
@@ -46,21 +64,23 @@ export const getIncidentRatesDailyFrance = async () => {
   }
 };
 
-export const getIncidentRatesDailyFranceWithFilterAge = async (age) => {
+export const getIncidentRatesDailyFranceWithFilterAge = async (age, region) => {
+  const dbToSearch = region ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
   let collection = [];
 
   try {
     await client.connect();
     const database = client.db(process.env.DBNAME);
-    collection = database.collection(TAUX_INC_Q_FRA);
+    collection = database.collection(dbToSearch);
     let columnToExclude = ["pop", "fra", "pop_f", "pop_h"];
 
     const result = await findDocumentWithFilterQueryColumn(
       collection,
       "cl_age90",
       age,
-      columnToExclude
+      columnToExclude,
+      region
     );
     return result;
   } catch (err) {
@@ -70,14 +90,15 @@ export const getIncidentRatesDailyFranceWithFilterAge = async (age) => {
   }
 };
 
-export const getIncidentRatesDailyFranceWithFilterGender = async (gender) => {
+export const getIncidentRatesDailyFranceWithFilterGender = async (gender, region) => {
+  const dbToSearch = region ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
   let collection = [];
 
   try {
     await client.connect();
     const database = client.db(process.env.DBNAME);
-    collection = database.collection(TAUX_INC_Q_FRA);
+    collection = database.collection(dbToSearch);
     let columnToExclude = [];
     if (gender.toLowerCase() === "f") {
       columnToExclude = ["pop", "fra", "pop_f", "pop_h", "P_h", "P"];
@@ -86,7 +107,8 @@ export const getIncidentRatesDailyFranceWithFilterGender = async (gender) => {
     }
     const result = await findDocumentWithFilterQuery(
       collection,
-      columnToExclude
+      columnToExclude,
+      region
     );
     return result;
   } catch (err) {
@@ -96,14 +118,15 @@ export const getIncidentRatesDailyFranceWithFilterGender = async (gender) => {
   }
 };
 
-export const getIncidentRatesDailyFranceWithFilterMonth = async (month) => {
+export const getIncidentRatesDailyFranceWithFilterMonth = async (month, region) => {
+  const dbToSearch = region ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
   let collection = [];
 
   try {
     await client.connect();
     const database = client.db(process.env.DBNAME);
-    collection = database.collection(TAUX_INC_Q_FRA);
+    collection = database.collection(dbToSearch);
     let columnToExclude = [];
     columnToExclude = ["pop", "fra", "pop_f", "pop_h"];
     let regexMonth = new RegExp("-" + month + "-");
@@ -111,7 +134,8 @@ export const getIncidentRatesDailyFranceWithFilterMonth = async (month) => {
       collection,
       "jour",
       regexMonth,
-      columnToExclude
+      columnToExclude,
+      region
     );
     return result;
   } catch (err) {
@@ -125,7 +149,8 @@ const findDocumentWithFilterQueryColumn = async (
   collection,
   nameColumn,
   value,
-  columnToExclude
+  columnToExclude,
+  region
 ) => {
   let obj = {};
 
@@ -134,19 +159,54 @@ const findDocumentWithFilterQueryColumn = async (
   columnToExclude.forEach((col) => {
     projectionColumnToExclude[col] = 0;
   });
-  const cursor = await collection
-    .find(obj, { projection: projectionColumnToExclude })
-    .toArray();
+  let cursor;
+  if (region) {
+    obj.reg = region;
+    cursor = await collection
+      .find(obj, { projection: projectionColumnToExclude })
+      .toArray();
+  } else {
+    cursor = await collection
+      .find(obj, { projection: projectionColumnToExclude })
+      .toArray();
+  }
   return cursor;
+
 };
 
-const findDocumentWithFilterQuery = async (collection, columnToExclude) => {
+const findDocumentWithFilterQuery = async (collection, columnToExclude, region) => {
   let projectionColumnToExclude = {};
   columnToExclude.forEach((col) => {
     projectionColumnToExclude[col] = 0;
   });
-  const cursor = await collection
-    .find({}, { projection: projectionColumnToExclude })
-    .toArray();
+
+  let cursor;
+  if (region) {
+    cursor = await collection
+      .find({ reg: region }, { projection: projectionColumnToExclude })
+      .toArray();
+  } else {
+    cursor = await collection
+      .find({}, { projection: projectionColumnToExclude })
+      .toArray();
+  }
   return cursor;
+
 };
+
+export const getIncidentRatesDailyRegion = async (region) => {
+  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+
+  try {
+    await client.connect();
+    const database = client.db(process.env.DBNAME);
+    const collection = database.collection(TAUX_INC_Q_REG);
+
+    return await collection.find({reg: region}).toArray();
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await client.close();
+  }
+};
+

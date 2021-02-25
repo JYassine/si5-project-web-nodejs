@@ -5,6 +5,7 @@ import {
   getIncidentRatesDailyFranceWithFilterAge,
   getIncidentRatesDailyFranceWithFilterGender,
   getIncidentRatesDailyFranceWithFilterMonth,
+  getIncidentRatesDailyRegion
 } from "../mongoDbModule.js";
 
 const incidentRateRouter = express.Router();
@@ -15,28 +16,35 @@ const incidentRateRouter = express.Router();
  */
 incidentRateRouter.get("/", async (req, res) => {
   try {
-    const results = await getIncidentRatesDailyFrance();
+    
 
     let queryAge = undefined;
     let queryGender = undefined;
     let queryMonth = undefined;
+    let queryRegion = undefined;
+
 
     if (req.query) {
       if (req.query.age) {
         queryAge = await getIncidentRatesDailyFranceWithFilterAge(
-          req.query.age
+          req.query.age, req.query.region
         );
       }
       if (req.query.gender) {
         queryGender = await getIncidentRatesDailyFranceWithFilterGender(
-          req.query.gender
+          req.query.gender, req.query.region
         );
       }
       if (req.query.month) {
         queryMonth = await getIncidentRatesDailyFranceWithFilterMonth(
-          req.query.month
+          req.query.month, req.query.region
         );
       }
+      if (req.query.region) {
+        queryRegion = await getIncidentRatesDailyRegion(
+          req.query.region
+        )
+      };
     }
     let finalResult = [];
     if (
@@ -84,7 +92,10 @@ incidentRateRouter.get("/", async (req, res) => {
       return res.status(200).json(queryGender);
     } else if (queryMonth !== undefined) {
       return res.status(200).json(queryMonth);
+    } else if (queryRegion !== undefined) {
+      return res.status(200).json(queryRegion);
     }
+    const results = await getIncidentRatesDailyFrance(region);
     return res.status(200).json(results);
   } catch (err) {
     return res.status(400).json(err.message);
