@@ -16,41 +16,45 @@ import axios from "axios";
 import configServer from "../configServer.json";
 
 export const Filter = ({ mode, onChange }) => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const toggle = () => setDropdownOpen((prevState) => !prevState);
+  const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
+  const [months, setMonths] = useState([""]);
+  const [dropdownOpenYear, setDropdownOpenYear] = useState(false);
   const [genderFilter, setGenderFilter] = useState("h");
-  const [monthFilter, setMonthFilter] = useState("6");
+  const [monthFilter, setMonthFilter] = useState("");
   const [ageFilter, setAgeFilter] = useState(10);
+  const [yearFilter, setYearFilter] = useState(2020);
 
   useEffect(async () => {
-    const resultFiltered = await fetchDataCovid();
-    onChange(resultFiltered);
-    return resultFiltered;
-  }, [genderFilter, monthFilter, ageFilter]);
+    await fetchMonths();
+    onChange(await fetchDataCovid());
+  }, [genderFilter, monthFilter, ageFilter, yearFilter]);
 
+  const fetchMonths = async () => {
+    let queryAllMonths = "/months/" + yearFilter;
+
+    console.log(configServer.urlServer + "" + queryAllMonths);
+    const allMonths = await axios
+      .get(configServer.urlServer + "" + queryAllMonths)
+      .catch((err) => {
+        console.error(err);
+      });
+    setMonths(allMonths.data);
+  };
   const fetchDataCovid = async () => {
     let result = undefined;
-    let month = monthFilter < 10 ? "0" + monthFilter : monthFilter;
     let age =
       (ageFilter === 90) | (ageFilter === 0)
         ? ageFilter
         : parseInt(ageFilter) + 9;
-    let filter = "?gender=" + genderFilter + "&month=" + month + "&age=" + age;
+    let filter =
+      "?gender=" +
+      genderFilter +
+      "&month=" +
+      monthFilter +
+      "&age=" +
+      age +
+      "&year=" +
+      yearFilter;
     console.log(configServer.urlServer + "" + filter);
     result = await axios
       .get(configServer.urlServer + "" + filter)
@@ -65,6 +69,10 @@ export const Filter = ({ mode, onChange }) => {
     return result.data;
   };
 
+  const toggleMonth = () => setDropdownOpenMonth((prevState) => !prevState);
+
+  const toggleYear = () => setDropdownOpenYear((prevState) => !prevState);
+
   const handleGenderFilter = async (e) => {
     setGenderFilter(e.target.value);
   };
@@ -75,6 +83,11 @@ export const Filter = ({ mode, onChange }) => {
 
   const handleAgeFilter = async (e, val) => {
     setAgeFilter(val);
+  };
+
+  const handleYearFilter = async (e) => {
+    setYearFilter(e.target.value);
+    setMonthFilter("");
   };
 
   function GendersButton(props) {
@@ -98,11 +111,7 @@ export const Filter = ({ mode, onChange }) => {
     const months = props.months;
     const listMonths = months.map((month) => {
       return (
-        <DropdownItem
-          key={months.indexOf(month) + 1}
-          onClick={handleMonthFilter}
-          value={months.indexOf(month) + 1}
-        >
+        <DropdownItem key={month} onClick={handleMonthFilter} value={month}>
           {month}
         </DropdownItem>
       );
@@ -158,9 +167,24 @@ export const Filter = ({ mode, onChange }) => {
           <Row>
             <Col>
               <h2>Month</h2>
-              <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+              <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
                 <DropdownToggle caret> {monthFilter}</DropdownToggle>
                 <MonthsSelect months={months} />
+              </Dropdown>
+            </Col>
+            <Col>
+              <h2>Year</h2>
+              <Dropdown isOpen={dropdownOpenYear} toggle={toggleYear}>
+                <DropdownToggle caret> {yearFilter}</DropdownToggle>
+                <DropdownMenu>
+                  <DropdownItem key={1} onClick={handleYearFilter} value={2020}>
+                    {2020}
+                  </DropdownItem>
+
+                  <DropdownItem key={2} onClick={handleYearFilter} value={2021}>
+                    {2021}
+                  </DropdownItem>
+                </DropdownMenu>
               </Dropdown>
             </Col>
           </Row>
