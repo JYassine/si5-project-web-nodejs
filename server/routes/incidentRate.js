@@ -1,5 +1,4 @@
 import express from "express";
-import { query } from "express-validator";
 import {
   getIncidentRatesDailyFrance,
   getIncidentRatesDailyFranceWithFilterAge,
@@ -7,6 +6,7 @@ import {
   getIncidentRatesDailyFranceWithFilterMonth,
   getIncidentRatesDailyRegion,
   getMonthsForYear,
+  getAllRegions,
 } from "../mongoDbModule.js";
 
 const incidentRateRouter = express.Router();
@@ -122,6 +122,19 @@ incidentRateRouter.get("/", async (req, res) => {
 incidentRateRouter.get("/months/:year", async (req, res) => {
   try {
     const results = await getMonthsForYear(req.params.year);
+    return res.status(200).json(results);
+  } catch (err) {
+    return res.status(400).json(err.message);
+  }
+});
+
+/**
+ * Get all region of France
+ *
+ */
+incidentRateRouter.get("/regions", async (req, res) => {
+  try {
+    const results = await getAllRegions();
     return res.status(200).json(results);
   } catch (err) {
     return res.status(400).json(err.message);

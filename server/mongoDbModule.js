@@ -253,3 +253,34 @@ export const getMonthsForYear = async (year) => {
     await client.close();
   }
 };
+
+export const getAllRegions = async () => {
+  const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
+
+  try {
+    await client.connect();
+    const database = client.db(process.env.DBNAME);
+    const collection = database.collection(TAUX_INC_Q_REG);
+
+    const regionsData = await findDocumentWithFilterQuery(collection, [
+      "pop",
+      "fra",
+      "pop_f",
+      "pop_h",
+      "P_h",
+      "P_f",
+      "P",
+      "cl_age90",
+      "_id",
+    ]);
+    let allRegions = new Set();
+    regionsData.forEach((region) => {
+      allRegions.add(region.reg);
+    });
+    return Array.from(allRegions);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await client.close();
+  }
+};

@@ -19,16 +19,33 @@ export const Filter = ({ mode, onChange }) => {
   const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
   const [months, setMonths] = useState([""]);
   const [dropdownOpenYear, setDropdownOpenYear] = useState(false);
+
+  const [dropdownOpenRegion, setDropdownOpenRegion] = useState(false);
   const [genderFilter, setGenderFilter] = useState("h");
+  const [regionFilter, setRegionFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
-  const [ageFilter, setAgeFilter] = useState(10);
+  const [ageFilter, setAgeFilter] = useState(0);
   const [yearFilter, setYearFilter] = useState(2020);
+  const [regions, setRegions] = useState([""]);
 
   useEffect(async () => {
-    await fetchMonths();
+    fetchRegions();
+    fetchMonths();
     onChange(await fetchDataCovid());
-  }, [genderFilter, monthFilter, ageFilter, yearFilter]);
+  }, [genderFilter, monthFilter, ageFilter, yearFilter, regionFilter]);
 
+  const fetchRegions = async () => {
+    let queryAllRegions = "/regions";
+
+    console.log(configServer.urlServer + "" + queryAllRegions);
+    const allRegions = await axios
+      .get(configServer.urlServer + "" + queryAllRegions)
+      .catch((err) => {
+        console.error(err);
+      });
+    allRegions.data.push("");
+    setRegions(allRegions.data);
+  };
   const fetchMonths = async () => {
     let queryAllMonths = "/months/" + yearFilter;
 
@@ -38,6 +55,7 @@ export const Filter = ({ mode, onChange }) => {
       .catch((err) => {
         console.error(err);
       });
+    allMonths.data.push("");
     setMonths(allMonths.data);
   };
   const fetchDataCovid = async () => {
@@ -54,7 +72,9 @@ export const Filter = ({ mode, onChange }) => {
       "&age=" +
       age +
       "&year=" +
-      yearFilter;
+      yearFilter +
+      "&region=" +
+      regionFilter;
     console.log(configServer.urlServer + "" + filter);
     result = await axios
       .get(configServer.urlServer + "" + filter)
@@ -73,6 +93,8 @@ export const Filter = ({ mode, onChange }) => {
 
   const toggleYear = () => setDropdownOpenYear((prevState) => !prevState);
 
+  const toggleRegion = () => setDropdownOpenRegion((prevState) => !prevState);
+
   const handleGenderFilter = async (e) => {
     setGenderFilter(e.target.value);
   };
@@ -88,6 +110,10 @@ export const Filter = ({ mode, onChange }) => {
   const handleYearFilter = async (e) => {
     setYearFilter(e.target.value);
     setMonthFilter("");
+  };
+
+  const handleRegionFilter = async (e) => {
+    setRegionFilter(e.target.value);
   };
 
   function GendersButton(props) {
@@ -111,16 +137,32 @@ export const Filter = ({ mode, onChange }) => {
     const months = props.months;
     const listMonths = months.map((month) => {
       return (
-        <DropdownItem key={month} onClick={handleMonthFilter} value={month}>
-          {month}
+        <DropdownItem
+          key={months.indexOf(month) + 1}
+          onClick={handleMonthFilter}
+          value={month}
+        >
+          {month === "" ? "All Month" : month}
         </DropdownItem>
       );
     });
     return <DropdownMenu>{listMonths}</DropdownMenu>;
   }
 
-  function valuetext(value) {
-    return `${value}°C`;
+  function RegionsSelect(props) {
+    const regions = props.regions;
+    const listRegions = regions.map((region) => {
+      return (
+        <DropdownItem
+          key={regions.indexOf(region) + 1}
+          onClick={handleRegionFilter}
+          value={region}
+        >
+          {region === "" ? "All Region" : region}
+        </DropdownItem>
+      );
+    });
+    return <DropdownMenu>{listRegions}</DropdownMenu>;
   }
 
   return (
@@ -153,7 +195,6 @@ export const Filter = ({ mode, onChange }) => {
                 className="filter-slider"
                 defaultValue={0}
                 onChange={handleAgeFilter}
-                getAriaValueText={valuetext}
                 aria-labelledby="discrete-slider"
                 valueLabelDisplay="auto"
                 step={10}
@@ -185,6 +226,14 @@ export const Filter = ({ mode, onChange }) => {
                     {2021}
                   </DropdownItem>
                 </DropdownMenu>
+              </Dropdown>
+            </Col>
+
+            <Col>
+              <h2>Region</h2>
+              <Dropdown isOpen={dropdownOpenRegion} toggle={toggleRegion}>
+                <DropdownToggle caret> {regionFilter}</DropdownToggle>
+                <RegionsSelect regions={regions} />
               </Dropdown>
             </Col>
           </Row>
