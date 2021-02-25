@@ -47,7 +47,9 @@ export const Filter = ({ mode, onChange }) => {
     let result = undefined;
     let month = monthFilter < 10 ? "0" + monthFilter : monthFilter;
     let age =
-      (ageFilter === 90) | (ageFilter === 0) ? 90 : parseInt(ageFilter) + 9;
+      (ageFilter === 90) | (ageFilter === 0)
+        ? ageFilter
+        : parseInt(ageFilter) + 9;
     let filter = "?gender=" + genderFilter + "&month=" + month + "&age=" + age;
     console.log(configServer.urlServer + "" + filter);
     result = await axios
