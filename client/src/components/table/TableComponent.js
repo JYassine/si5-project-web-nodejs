@@ -5,38 +5,30 @@ import { TablePagination } from './TablePagination.js';
 import { Filter } from './../Filter.js';
 
 export const TableComponent = ({ mode }) => {
-    const [data, setData] = useState([]);
-    const [dataFiltered, setDataFiltered] = useState();
+    const [dataFiltered, setDataFiltered] = useState([1]);
     const [pagesCount, setPagesCount] = useState(-1);
     const [currentPage, setCurrentPage] = useState(1);
-    const urlToFetch = 'http://localhost:4000/incidentRates';
 
     const nbResultsPerPage = 12;
+    console.log(dataFiltered)
 
     useEffect(() => {
-        fetch(urlToFetch)
-            .then(response => response.json())
-            .then(json => {
-                const filteredJson = json.filter((el) => el.cl_age90 === "0")
-                setData(filteredJson);
-                setPagesCount(Math.ceil(filteredJson.length / nbResultsPerPage));
-            })
-            .catch(err => console.log(err));
-    }, []);
+        setPagesCount(Math.ceil(dataFiltered.length / nbResultsPerPage));
+    }, [dataFiltered]);
 
     const handleSelected = (newPage) => {
         setCurrentPage(newPage);
     }
 
     const sliceAndRender = () => {
-        return data.slice((currentPage - 1) * nbResultsPerPage, currentPage * nbResultsPerPage)
+        return dataFiltered.slice((currentPage - 1) * nbResultsPerPage, currentPage * nbResultsPerPage)
             .map(el => {
                 return (
                     <tr key={el._id}>
                         <td>{el.jour}</td>
-                        <td>{el.P}</td>
-                        <td>{el.P_h}</td>
-                        <td>{el.P_f}</td>
+                        {dataFiltered[0].P !== undefined && <td>{el.P}</td>}
+                        {dataFiltered[0].P_h !== undefined && <td>{el.P_h}</td>}
+                        {dataFiltered[0].P_f !== undefined && <td>{el.P_f}</td>}
                     </tr>
                 )
             })
@@ -47,13 +39,13 @@ export const TableComponent = ({ mode }) => {
             <Row>
                 <Col>
                     <Row className="justify-content-center">
-                        <Table responsive dark={mode}>
+                        <Table responsive dark={mode} hover>
                             <thead>
                                 <tr>
                                     <th>Jour</th>
-                                    <th>Taux d'incidence</th>
-                                    <th>Taux d'incidence Hommes</th>
-                                    <th>Taux d'incidence Femmes</th>
+                                    {dataFiltered[0].P !== undefined && <th>Taux d'incidence</th>}
+                                    {dataFiltered[0].P_h !== undefined && <th>Taux d'incidence Hommes</th>}
+                                    {dataFiltered[0].P_f !== undefined && <th>Taux d'incidence Femmes</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -70,7 +62,6 @@ export const TableComponent = ({ mode }) => {
                     <Filter mode={mode} onChange={setDataFiltered} />
                 </Col>
             </Row>
-         
         </Container>
     )
 }
