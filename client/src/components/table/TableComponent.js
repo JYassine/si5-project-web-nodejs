@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Table } from 'reactstrap';
 import { Container, Row, Col } from 'reactstrap';
 import { TablePagination } from './TablePagination.js';
+import { Filter } from './../Filter.js';
 
 export const TableComponent = ({ mode }) => {
     const [data, setData] = useState([]);
+    const [dataFiltered, setDataFiltered] = useState();
     const [pagesCount, setPagesCount] = useState(-1);
     const [currentPage, setCurrentPage] = useState(1);
     const urlToFetch = 'http://localhost:4000/incidentRates';
@@ -42,27 +44,33 @@ export const TableComponent = ({ mode }) => {
 
     return (
         <Container>
-            <Col>
-                <Row>
-                    <Table responsive dark={mode}>
-                        <thead>
-                            <tr>
-                                <th>Jour</th>
-                                <th>Taux d'incidence</th>
-                                <th>Taux d'incidence Hommes</th>
-                                <th>Taux d'incidence Femmes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sliceAndRender()}
-                        </tbody>
-                    </Table>
-                </Row>
-                <Row className="justify-content-center">
-                    {pagesCount !== -1 && <TablePagination pagesCount={pagesCount} currentPage={currentPage}
-                        onSelect={handleSelected} />}
-                </Row>
-            </Col>
+            <Row>
+                <Col>
+                    <Row className="justify-content-center">
+                        <Table responsive dark={mode}>
+                            <thead>
+                                <tr>
+                                    <th>Jour</th>
+                                    <th>Taux d'incidence</th>
+                                    <th>Taux d'incidence Hommes</th>
+                                    <th>Taux d'incidence Femmes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sliceAndRender()}
+                            </tbody>
+                        </Table>
+                    </Row>
+                    <Row className="justify-content-center">
+                        {pagesCount !== -1 && <TablePagination pagesCount={pagesCount} currentPage={currentPage}
+                            onSelect={handleSelected} />}
+                    </Row>
+                </Col>
+                <Col md="auto">
+                    <Filter mode={mode} onChange={setDataFiltered} />
+                </Col>
+            </Row>
+         
         </Container>
     )
 }
