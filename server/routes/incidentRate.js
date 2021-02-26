@@ -8,6 +8,7 @@ import {
   getMonthsForYear,
   getAllRegions,
 } from "../mongoDbModule.js";
+import { calculateAverage } from './../utils/calculateAverage.js';
 
 const incidentRateRouter = express.Router();
 const DELIMITER = "-";
@@ -46,7 +47,8 @@ incidentRateRouter.get("/", async (req, res) => {
       if (req.query.month) {
         queryMonth = await getIncidentRatesDailyFranceWithFilterMonth(
           req.query.month,
-          req.query.region
+          req.query.region,
+          req.query.average
         );
         queryMonth = queryMonth.filter((value) => {
           return value.jour.match(queryYear + DELIMITER);
@@ -89,6 +91,7 @@ incidentRateRouter.get("/", async (req, res) => {
       finalResult = queryMonth.filter(
         (value) => value.cl_age90 === req.query.age
       );
+      if (req.query.average) finalResult = calculateAverage(finalResult)
       return res.status(200).json(finalResult);
     } else if (
       queryAge === undefined &&

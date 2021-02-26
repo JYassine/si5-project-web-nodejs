@@ -6,6 +6,7 @@ import { Menu } from "./components/Menu.js";
 import { TableComponent } from "./components/table/TableComponent.js";
 import { HomePageComponent } from "./components/HomePageComponent.js";
 import { ContactPage } from './components/contact/ContactPage.js';
+import { MapComponent } from './components/map/MapComponent.js';
 import { Container, Row, Col } from "reactstrap";
 import "./App.scss";
 import React, { useState } from "react";
@@ -66,6 +67,9 @@ function App() {
                 </Route>
                 <Route exact path="/contact">
                   <ContactPage />
+                </Route>
+                <Route exact path='/map'>
+                  <MapComponent />
                 </Route>
               </Row>
             </Col>

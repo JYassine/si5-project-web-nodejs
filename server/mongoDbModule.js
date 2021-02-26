@@ -1,6 +1,7 @@
 import MongoClientObject from "mongodb";
 import { convertCSVtoJSON } from "./utils/converter.js";
 import { dbUrl } from "./server.js";
+import { calculateAverage } from './utils/calculateAverage.js';
 
 const TAUX_INC_Q_FRA = "taux-inc-q-fra";
 const TAUX_INC_Q_REG = "taux-inc-q-reg";
@@ -121,9 +122,10 @@ export const getIncidentRatesDailyFranceWithFilterGender = async (
 
 export const getIncidentRatesDailyFranceWithFilterMonth = async (
   month,
-  region
+  region,
+  average
 ) => {
-  const dbToSearch = region ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
+  const dbToSearch = (region || average) ? TAUX_INC_Q_REG : TAUX_INC_Q_FRA;
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
   let collection = [];
 
@@ -139,7 +141,8 @@ export const getIncidentRatesDailyFranceWithFilterMonth = async (
       "jour",
       regexMonth,
       columnToExclude,
-      region
+      region,
+      average
     );
     return result;
   } catch (err) {
@@ -154,7 +157,8 @@ const findDocumentWithFilterQueryColumn = async (
   nameColumn,
   value,
   columnToExclude,
-  region
+  region,
+  average
 ) => {
   let obj = {};
 
@@ -164,14 +168,19 @@ const findDocumentWithFilterQueryColumn = async (
     projectionColumnToExclude[col] = 0;
   });
   let cursor;
-  if (region) {
+  if (region && !average) {
     obj.reg = region;
     cursor = await collection
       .find(obj, { projection: projectionColumnToExclude })
       .toArray();
-  } else {
+  } else if (!region && !average){
     cursor = await collection
       .find(obj, { projection: projectionColumnToExclude })
+      .toArray();
+  } else if (!region && average){
+    cursor = await collection
+      .find(obj, { projection: projectionColumnToExclude })
+      .sort({reg: 1})
       .toArray();
   }
   return cursor;
@@ -200,15 +209,19 @@ const findDocumentWithFilterQuery = async (
   return cursor;
 };
 
-export const getIncidentRatesDailyRegion = async (region) => {
+export const getIncidentRatesDailyRegion = async (region, average) => {
   const client = new MongoClient(dbUrl, { useUnifiedTopology: true });
 
   try {
     await client.connect();
     const database = client.db(process.env.DBNAME);
     const collection = database.collection(TAUX_INC_Q_REG);
-
-    return await collection.find({ reg: region }).toArray();
+    let result = await collection.find({ reg: region }).toArray();
+    if (average) {
+      return //TODO
+    } else {
+      return result
+    }
   } catch (err) {
     console.log(err);
   } finally {
