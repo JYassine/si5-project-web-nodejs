@@ -13,8 +13,15 @@ import { Row, Col } from "reactstrap";
 import "./Filter.scss";
 import axios from "axios";
 import configServer from "../configServer.json";
+import { useQuery } from "react-query";
 
-export const Filter = ({ mode, onChange }) => {
+export const Filter = ({
+  mode,
+  onChange,
+  changeData,
+  onLoadingData,
+  onError,
+}) => {
   const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
   const [months, setMonths] = useState([""]);
   const [dropdownOpenYear, setDropdownOpenYear] = useState(false);
@@ -26,32 +33,6 @@ export const Filter = ({ mode, onChange }) => {
   const [ageFilter, setAgeFilter] = useState(0);
   const [yearFilter, setYearFilter] = useState(2020);
   const [regions, setRegions] = useState([""]);
-
-  const serverUrl = process.env.NODE_ENV === 'production' ?
-    configServer.urlServerProd
-    :
-    configServer.urlServer;
-
-
-  const classAges = [
-    { age: 0, text: "All age" },
-    { age: 19, text: "10-19" },
-    { age: 29, text: "20-29" },
-    { age: 39, text: "30-39" },
-    { age: 49, text: "40-49" },
-    { age: 59, text: "50-59" },
-    { age: 69, text: "60-69" },
-    { age: 79, text: "70-79" },
-    { age: 89, text: "80-89" },
-    { age: 90, text: "90+" },
-  ];
-
-  useEffect(async () => {
-    fetchRegions();
-    fetchMonths();
-    onChange(await fetchDataCovid());
-  }, [genderFilter, monthFilter, ageFilter, yearFilter, regionFilter]);
-
   const fetchRegions = async () => {
     let queryAllRegions = "/regions";
 
@@ -59,10 +40,10 @@ export const Filter = ({ mode, onChange }) => {
     const allRegions = await axios
       .get(serverUrl + "" + queryAllRegions)
       .catch((err) => {
-        console.error(err);
+        throw Error(err);
       });
     allRegions.data.push("");
-    setRegions(allRegions.data);
+    return allRegions.data;
   };
   const fetchMonths = async () => {
     let queryAllMonths = "/months/" + yearFilter;
@@ -71,10 +52,10 @@ export const Filter = ({ mode, onChange }) => {
     const allMonths = await axios
       .get(serverUrl + "" + queryAllMonths)
       .catch((err) => {
-        console.error(err);
+        throw Error(err);
       });
     allMonths.data.push("");
-    setMonths(allMonths.data);
+    return allMonths.data;
   };
   const fetchDataCovid = async () => {
     let result = undefined;
@@ -90,11 +71,9 @@ export const Filter = ({ mode, onChange }) => {
       "&region=" +
       regionFilter;
     console.log(configServer.urlServer + "" + filter);
-    result = await axios
-      .get(serverUrl + "" + filter)
-      .catch((err) => {
-        console.error(err);
-      });
+    result = await axios.get(serverUrl + "" + filter).catch((err) => {
+      throw Error(err);
+    });
 
     result.data.forEach((data) => {
       if (data.P_h) {
@@ -111,6 +90,74 @@ export const Filter = ({ mode, onChange }) => {
     });
     return result.data;
   };
+  const monthQuery = useQuery(["fetchMonthsKey"], fetchMonths, {
+    manual: true,
+  });
+
+  const regionsQuery = useQuery(["fetchRegionsQuery"], fetchRegions, {
+    manual: true,
+  });
+
+  const dataCovidQuery = useQuery(["fetchDataCovidQuert"], fetchDataCovid, {
+    manual: true,
+  });
+
+  const serverUrl =
+    process.env.NODE_ENV === "production"
+      ? configServer.urlServerProd
+      : configServer.urlServer;
+
+  const classAges = [
+    { age: 0, text: "All age" },
+    { age: 19, text: "10-19" },
+    { age: 29, text: "20-29" },
+    { age: 39, text: "30-39" },
+    { age: 49, text: "40-49" },
+    { age: 59, text: "50-59" },
+    { age: 69, text: "60-69" },
+    { age: 79, text: "70-79" },
+    { age: 89, text: "80-89" },
+    { age: 90, text: "90+" },
+  ];
+
+  useEffect(async () => {
+    await monthQuery.refetch();
+    await dataCovidQuery.refetch();
+    await dataCovidQuery.refetch();
+
+    try {
+      setRegions(regionsQuery.data);
+      setMonths(monthQuery.data);
+      onChange(dataCovidQuery.data);
+    } catch (err) {
+      console.error(err);
+    }
+    changeData(
+      !monthQuery.isError ||
+        !regionsQuery.isError ||
+        !monthQuery.isLoading ||
+        !regionsQuery.isLoading ||
+        !dataCovidQuery.isError ||
+        !dataCovidQuery.isLoading
+    );
+    onLoadingData(
+      !regionsQuery.isLoading ||
+        !monthQuery.isLoading ||
+        !dataCovidQuery.isLoading
+    );
+    onError(
+      dataCovidQuery.isError || regionsQuery.isError || monthQuery.isError
+    );
+  }, [
+    genderFilter,
+    monthFilter,
+    ageFilter,
+    yearFilter,
+    regionFilter,
+    regionsQuery.data,
+    monthQuery.data,
+    dataCovidQuery.data,
+  ]);
 
   const toggleMonth = () => setDropdownOpenMonth((prevState) => !prevState);
 
@@ -194,7 +241,7 @@ export const Filter = ({ mode, onChange }) => {
     const listClassAge = classAges.map((age) => {
       return (
         <DropdownItem
-          key={regions.indexOf(age)}
+          key={classAges.indexOf(age)}
           onClick={handleAgeFilter}
           value={age.age}
         >
@@ -207,72 +254,82 @@ export const Filter = ({ mode, onChange }) => {
 
   return (
     <div className={`filter ${mode ? "dark" : "light"}`}>
-      <Card className={`filter-card ${mode ? "dark" : "light"}`}>
-        <CardBody>
-          <Row>
-            <Col>
-              <h1>Filter</h1>
-            </Col>
-          </Row>
+      {
+        <Card className={`filter-card ${mode ? "dark" : "light"}`}>
+          <CardBody>
+            <Row>
+              <Col>
+                <h1>Filter</h1>
+              </Col>
+            </Row>
 
-          <Row>
-            <Col>
-              <h2>Gender</h2>
-            </Col>
-            <Col>
-              <GendersButton
-                genders={[
-                  { gender: "All", value: "", key: 0, color: "#F51604" },
-                  { gender: "Male", value: "h", key: 1, color: "#1014DE" },
-                  { gender: "Female", value: "f", key: 2, color: "#C71585" },
-                ]}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <h2>Age</h2>
-              <Dropdown isOpen={dropdownOpenAge} toggle={toggleAge}>
-                <DropdownToggle caret> {ageFilter}</DropdownToggle>
-                <AgeSelect />
-              </Dropdown>
-            </Col>
-          </Row>
+            <Row>
+              <Col>
+                <h2>Gender</h2>
+              </Col>
+              <Col>
+                <GendersButton
+                  genders={[
+                    { gender: "All", value: "", key: 0, color: "#F51604" },
+                    { gender: "Male", value: "h", key: 1, color: "#1014DE" },
+                    { gender: "Female", value: "f", key: 2, color: "#C71585" },
+                  ]}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <h2>Age</h2>
+                <Dropdown isOpen={dropdownOpenAge} toggle={toggleAge}>
+                  <DropdownToggle caret> {ageFilter}</DropdownToggle>
+                  <AgeSelect />
+                </Dropdown>
+              </Col>
+            </Row>
 
-          <Row>
-            <Col>
-              <h2>Month</h2>
-              <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
-                <DropdownToggle caret> {monthFilter}</DropdownToggle>
-                <MonthsSelect months={months} />
-              </Dropdown>
-            </Col>
-            <Col>
-              <h2>Year</h2>
-              <Dropdown isOpen={dropdownOpenYear} toggle={toggleYear}>
-                <DropdownToggle caret> {yearFilter}</DropdownToggle>
-                <DropdownMenu>
-                  <DropdownItem key={1} onClick={handleYearFilter} value={2020}>
-                    {2020}
-                  </DropdownItem>
+            <Row>
+              <Col>
+                <h2>Month</h2>
+                <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
+                  <DropdownToggle caret> {monthFilter}</DropdownToggle>
+                  <MonthsSelect months={months} />
+                </Dropdown>
+              </Col>
+              <Col>
+                <h2>Year</h2>
+                <Dropdown isOpen={dropdownOpenYear} toggle={toggleYear}>
+                  <DropdownToggle caret> {yearFilter}</DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem
+                      key={1}
+                      onClick={handleYearFilter}
+                      value={2020}
+                    >
+                      {2020}
+                    </DropdownItem>
 
-                  <DropdownItem key={2} onClick={handleYearFilter} value={2021}>
-                    {2021}
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </Col>
+                    <DropdownItem
+                      key={2}
+                      onClick={handleYearFilter}
+                      value={2021}
+                    >
+                      {2021}
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </Col>
 
-            <Col>
-              <h2>Region</h2>
-              <Dropdown isOpen={dropdownOpenRegion} toggle={toggleRegion}>
-                <DropdownToggle caret> {regionFilter}</DropdownToggle>
-                <RegionsSelect regions={regions} />
-              </Dropdown>
-            </Col>
-          </Row>
-        </CardBody>
-      </Card>
+              <Col>
+                <h2>Region</h2>
+                <Dropdown isOpen={dropdownOpenRegion} toggle={toggleRegion}>
+                  <DropdownToggle caret> {regionFilter}</DropdownToggle>
+                  <RegionsSelect regions={regions} />
+                </Dropdown>
+              </Col>
+            </Row>
+          </CardBody>
+        </Card>
+      }
     </div>
   );
 };
