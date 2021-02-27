@@ -1,73 +1,78 @@
-import { useState, useEffect } from 'react';
-import { Table } from 'reactstrap';
-import { Container, Row, Col } from 'reactstrap';
-import { TablePagination } from './TablePagination.js';
-import configServer from "../../configServer.json";
+import { useState, useEffect } from "react";
+import { Table } from "reactstrap";
+import { Container, Row, Col } from "reactstrap";
+import { TablePagination } from "./TablePagination.js";
+import { Filter } from "./../Filter.js";
 
 export const TableComponent = ({ mode }) => {
-    const [data, setData] = useState([]);
-    const [pagesCount, setPagesCount] = useState(-1);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [dataFiltered, setDataFiltered] = useState([1]);
+  const [pagesCount, setPagesCount] = useState(-1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-    const urlToFetch = process.env.NODE_ENV === 'production' ?
-    configServer.urlServerProd
-    :
-    configServer.urlServer;
+  const nbResultsPerPage = 12;
+  console.log(dataFiltered);
 
-    const nbResultsPerPage = 12;
+  useEffect(() => {
+    setPagesCount(Math.ceil(dataFiltered.length / nbResultsPerPage));
+  }, [dataFiltered]);
 
-    useEffect(() => {
-        fetch(urlToFetch)
-            .then(response => response.json())
-            .then(json => {
-                const filteredJson = json.filter((el) => el.cl_age90 === "0")
-                setData(filteredJson);
-                setPagesCount(Math.ceil(filteredJson.length / nbResultsPerPage));
-            })
-            .catch(err => console.log(err));
-    }, []);
+  const handleSelected = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
-    const handleSelected = (newPage) => {
-        setCurrentPage(newPage);
-    }
+  const sliceAndRender = () => {
+    return dataFiltered
+      .slice(
+        (currentPage - 1) * nbResultsPerPage,
+        currentPage * nbResultsPerPage
+      )
+      .map((el) => {
+        return (
+          <tr key={el._id}>
+            <td>{el.jour}</td>
+            {dataFiltered[0].P !== undefined && <td>{el.P}</td>}
+            {dataFiltered[0].P_h !== undefined && <td>{el.P_h}</td>}
+            {dataFiltered[0].P_f !== undefined && <td>{el.P_f}</td>}
+          </tr>
+        );
+      });
+  };
 
-    const sliceAndRender = () => {
-        return data.slice((currentPage - 1) * nbResultsPerPage, currentPage * nbResultsPerPage)
-            .map(el => {
-                return (
-                    <tr key={el._id}>
-                        <td>{el.jour}</td>
-                        <td>{el.P}</td>
-                        <td>{el.P_h}</td>
-                        <td>{el.P_f}</td>
-                    </tr>
-                )
-            })
-    }
-
-    return (
-        <Container>
-            <Col>
-                <Row>
-                    <Table responsive dark={mode}>
-                        <thead>
-                            <tr>
-                                <th>Jour</th>
-                                <th>Taux d'incidence</th>
-                                <th>Taux d'incidence Hommes</th>
-                                <th>Taux d'incidence Femmes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sliceAndRender()}
-                        </tbody>
-                    </Table>
-                </Row>
-                <Row className="justify-content-center">
-                    {pagesCount !== -1 && <TablePagination pagesCount={pagesCount} currentPage={currentPage}
-                        onSelect={handleSelected} />}
-                </Row>
-            </Col>
-        </Container>
-    )
-}
+  return (
+    <Container>
+      <Row>
+        <Col>
+          <Row className="justify-content-center">
+            <Table responsive dark={mode} hover>
+              <thead>
+                <tr>
+                  <th>Jour</th>
+                  {dataFiltered[0].P !== undefined && <th>Taux d'incidence</th>}
+                  {dataFiltered[0].P_h !== undefined && (
+                    <th>Taux d'incidence Hommes</th>
+                  )}
+                  {dataFiltered[0].P_f !== undefined && (
+                    <th>Taux d'incidence Femmes</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>{sliceAndRender()}</tbody>
+            </Table>
+          </Row>
+          <Row className="justify-content-center">
+            {pagesCount !== -1 && (
+              <TablePagination
+                pagesCount={pagesCount}
+                currentPage={currentPage}
+                onSelect={handleSelected}
+              />
+            )}
+          </Row>
+        </Col>
+        <Col md="auto">
+          <Filter mode={mode} onChange={setDataFiltered} />
+        </Col>
+      </Row>
+    </Container>
+  );
+};
