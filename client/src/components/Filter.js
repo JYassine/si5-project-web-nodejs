@@ -15,6 +15,11 @@ import axios from "axios";
 import configServer from "../configServer.json";
 import { useQuery } from "react-query";
 
+const serverUrl =
+  process.env.NODE_ENV === "production"
+    ? configServer.urlServerProd
+    : configServer.urlServer;
+
 export const Filter = ({
   mode,
   onChange,
@@ -36,7 +41,7 @@ export const Filter = ({
   const fetchRegions = async () => {
     let queryAllRegions = "/regions";
 
-    console.log(configServer.urlServer + "" + queryAllRegions);
+    console.log(serverUrl + "" + queryAllRegions);
     const allRegions = await axios
       .get(serverUrl + "" + queryAllRegions)
       .catch((err) => {
@@ -48,7 +53,7 @@ export const Filter = ({
   const fetchMonths = async () => {
     let queryAllMonths = "/months/" + yearFilter;
 
-    console.log(configServer.urlServer + "" + queryAllMonths);
+    console.log(serverUrl + "" + queryAllMonths);
     const allMonths = await axios
       .get(serverUrl + "" + queryAllMonths)
       .catch((err) => {
@@ -70,7 +75,7 @@ export const Filter = ({
       yearFilter +
       "&region=" +
       regionFilter;
-    console.log(configServer.urlServer + "" + filter);
+    console.log(serverUrl + "" + filter);
     result = await axios.get(serverUrl + "" + filter).catch((err) => {
       throw Error(err);
     });
@@ -101,12 +106,6 @@ export const Filter = ({
   const dataCovidQuery = useQuery(["fetchDataCovidQuert"], fetchDataCovid, {
     manual: true,
   });
-
-  const serverUrl =
-    process.env.NODE_ENV === "production"
-      ? configServer.urlServerProd
-      : configServer.urlServer;
-
   const classAges = [
     { age: 0, text: "All age" },
     { age: 19, text: "10-19" },
