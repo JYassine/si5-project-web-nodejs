@@ -4,8 +4,13 @@ import { Container, Row, Col } from "reactstrap";
 import { TablePagination } from "./TablePagination.js";
 import { Filter } from "./../Filter.js";
 
+import { Alert, Spinner } from "reactstrap";
+
 export const TableComponent = ({ mode }) => {
   const [dataFiltered, setDataFiltered] = useState([1]);
+  const [showData, setData] = useState(false);
+  const [error, setErrorData] = useState(false);
+  const [loadData, setLoadingData] = useState(false);
   const [pagesCount, setPagesCount] = useState(-1);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -39,40 +44,60 @@ export const TableComponent = ({ mode }) => {
   };
 
   return (
-    <Container>
-      <Row>
-        <Col>
-          <Row className="justify-content-center">
-            <Table responsive dark={mode} hover>
-              <thead>
-                <tr>
-                  <th>Jour</th>
-                  {dataFiltered[0].P !== undefined && <th>Taux d'incidence</th>}
-                  {dataFiltered[0].P_h !== undefined && (
-                    <th>Taux d'incidence Hommes</th>
-                  )}
-                  {dataFiltered[0].P_f !== undefined && (
-                    <th>Taux d'incidence Femmes</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>{sliceAndRender()}</tbody>
-            </Table>
-          </Row>
-          <Row className="justify-content-center">
-            {pagesCount !== -1 && (
-              <TablePagination
-                pagesCount={pagesCount}
-                currentPage={currentPage}
-                onSelect={handleSelected}
-              />
-            )}
-          </Row>
-        </Col>
-        <Col md="auto">
-          <Filter mode={mode} onChange={setDataFiltered} />
-        </Col>
-      </Row>
-    </Container>
+    <>
+      {error && (
+        <Alert color="danger">
+          {error.message || "Une erreur est survenue"}
+        </Alert>
+      )}
+      {!loadData && <Spinner color="primary" />}
+
+      <Container>
+        <Row>
+          <Col>
+            <Row className="justify-content-center">
+              {showData && (
+                <Table responsive dark={mode} hover>
+                  <thead>
+                    <tr>
+                      <th>Jour</th>
+                      {dataFiltered[0].P !== undefined && (
+                        <th>Taux d'incidence</th>
+                      )}
+                      {dataFiltered[0].P_h !== undefined && (
+                        <th>Taux d'incidence Hommes</th>
+                      )}
+                      {dataFiltered[0].P_f !== undefined && (
+                        <th>Taux d'incidence Femmes</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>{sliceAndRender()}</tbody>
+                </Table>
+              )}
+            </Row>
+            <Row className="justify-content-center">
+              {pagesCount !== -1 && (
+                <TablePagination
+                  pagesCount={pagesCount}
+                  currentPage={currentPage}
+                  onSelect={handleSelected}
+                />
+              )}
+            </Row>
+          </Col>
+
+          <Col md="auto">
+            <Filter
+              mode={mode}
+              onChange={setDataFiltered}
+              changeData={setData}
+              onLoadingData={setLoadingData}
+              onError={setErrorData}
+            />
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 };
