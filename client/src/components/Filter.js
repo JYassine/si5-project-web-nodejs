@@ -75,15 +75,22 @@ export const Filter = ({
   ];
 
   useEffect(() => {
-    monthQuery.refetch().then(() => {
+    const updateData = async () => {
+      await monthQuery.refetch();
+      await regionsQuery.refetch();
+      await dataCovidQuery.refetch();
+    };
+
+    updateData();
+    if (!monthQuery.isLoading && !monthQuery.isError) {
       setMonths(monthQuery.data);
-    });
-    regionsQuery.refetch().then(() => {
+    }
+    if (!regionsQuery.isLoading && !regionsQuery.isError) {
       setRegions(regionsQuery.data);
-    });
-    dataCovidQuery.refetch().then(() => {
+    }
+    if (!dataCovidQuery.isLoading && !dataCovidQuery.isError) {
       onChange(dataCovidQuery.data);
-    });
+    }
 
     changeData(
       !monthQuery.isError ||
@@ -161,19 +168,18 @@ export const Filter = ({
   function MonthsSelect(props) {
     const months = props.months;
     let listMonths = [""];
-    if (months !== undefined) {
-      listMonths = months.map((month) => {
-        return (
-          <DropdownItem
-            key={months.indexOf(month) + 1}
-            onClick={handleMonthFilter}
-            value={month}
-          >
-            {month === "" ? "All Month" : month}
-          </DropdownItem>
-        );
-      });
-    }
+    listMonths = months.map((month) => {
+      return (
+        <DropdownItem
+          key={months.indexOf(month) + 1}
+          onClick={handleMonthFilter}
+          value={month}
+        >
+          {month === "" ? "All Month" : month}
+        </DropdownItem>
+      );
+    });
+
     return <DropdownMenu>{listMonths}</DropdownMenu>;
   }
 
@@ -181,19 +187,17 @@ export const Filter = ({
     const regions = props.regions;
 
     let listRegions = [""];
-    if (regions !== undefined) {
-      listRegions = regions.map((region) => {
-        return (
-          <DropdownItem
-            key={regions.indexOf(region) + 1}
-            onClick={handleRegionFilter}
-            value={region}
-          >
-            {region === "" ? "All Region" : region}
-          </DropdownItem>
-        );
-      });
-    }
+    listRegions = regions.map((region) => {
+      return (
+        <DropdownItem
+          key={regions.indexOf(region) + 1}
+          onClick={handleRegionFilter}
+          value={region}
+        >
+          {region === "" ? "All Region" : region}
+        </DropdownItem>
+      );
+    });
 
     return <DropdownMenu>{listRegions}</DropdownMenu>;
   }
@@ -253,7 +257,7 @@ export const Filter = ({
                 <h2>Mois</h2>
                 <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
                   <DropdownToggle caret> {monthFilter}</DropdownToggle>
-                  {!monthQuery.isLoading && <MonthsSelect months={months} />}
+                  <MonthsSelect months={months} />
                 </Dropdown>
               </Col>
               <Col>
@@ -276,9 +280,8 @@ export const Filter = ({
                 <h2>Region</h2>
                 <Dropdown isOpen={dropdownOpenRegion} toggle={toggleRegion}>
                   <DropdownToggle caret> {regionFilter}</DropdownToggle>
-                  {!regionsQuery.isLoading && (
-                    <RegionsSelect regions={regions} />
-                  )}
+
+                  <RegionsSelect regions={regions} />
                 </Dropdown>
               </Col>
             </Row>
