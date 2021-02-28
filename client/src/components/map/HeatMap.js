@@ -12,7 +12,7 @@ const HeatMap = ({ month }) => {
     })
     const [data, setData] = useState();
     const serverUrl = process.env.NODE_ENV === 'production' ?
-        configServer.prod
+        configServer.urlServerProd
         :
         configServer.urlServer;
 
