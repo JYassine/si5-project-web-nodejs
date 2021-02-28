@@ -13,6 +13,8 @@ import { Row, Col } from "reactstrap";
 import "./Filter.scss";
 import axios from "axios";
 import configServer from "../configServer.json";
+import regionData from './../regionData.json';
+import googleApi from './../googleApi.json';
 
 export const Filter = ({ mode, onChange }) => {
   const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
@@ -236,6 +238,9 @@ export const Filter = ({ mode, onChange }) => {
                 <DropdownToggle caret> {ageFilter}</DropdownToggle>
                 <AgeSelect />
               </Dropdown>
+            </Col>
+            <Col className='align-content-center justify-content-center' mb="auto" mt="auto">
+              <Button color="primary" mb="auto" mt="auto">Détecter région</Button>
             </Col>
           </Row>
 
