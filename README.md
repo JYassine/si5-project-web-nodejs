@@ -66,7 +66,7 @@ Backend service is hosted at https://backend-dot-covidinfo-305912.ew.r.appspot.c
 
 ## How to test our REST API
 
-_Be sure to run the back-end server before !_
+_Be sure to run the back-end server before !_  
 Server runs at http://localhost:4000/
 
 ### Route for incident rates in France :
