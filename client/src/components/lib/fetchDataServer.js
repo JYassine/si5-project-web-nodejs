@@ -20,9 +20,7 @@ export const fetchDataCovid = async (
     yearFilter +
     "&region=" +
     regionFilter;
-  result = await axios.get(serverUrl + "" + filter).catch((err) => {
-    throw Error(err);
-  });
+  result = await axios.get(serverUrl + "" + filter);
 
   result.data.forEach((data) => {
     if (data.P_h) {
