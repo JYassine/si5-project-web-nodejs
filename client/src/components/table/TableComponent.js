@@ -62,13 +62,13 @@ export const TableComponent = ({ mode }) => {
                     <tr>
                       <th>Jour</th>
                       {dataFiltered[0].P !== undefined && (
-                        <th>Taux d'incidence</th>
+                        <th>Nombre tests positifs</th>
                       )}
                       {dataFiltered[0].P_h !== undefined && (
-                        <th>Taux d'incidence Hommes</th>
+                        <th>Nombre tests positifs Hommes</th>
                       )}
                       {dataFiltered[0].P_f !== undefined && (
-                        <th>Taux d'incidence Femmes</th>
+                        <th>Nombre tests positifs Femmes</th>
                       )}
                     </tr>
                   </thead>
