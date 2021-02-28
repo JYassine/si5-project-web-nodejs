@@ -75,29 +75,16 @@ export const Filter = ({
   ];
 
   useEffect(() => {
-    const update = async () => {
-      updateData();
-    };
-    update();
-  }, [
-    genderFilter,
-    monthFilter,
-    ageFilter,
-    yearFilter,
-    regionFilter,
-    regionsQuery.data,
-    monthQuery.data,
-    dataCovidQuery.data,
-  ]);
+    monthQuery.refetch().then(() => {
+      setMonths(monthQuery.data);
+    });
+    regionsQuery.refetch().then(() => {
+      setRegions(regionsQuery.data);
+    });
+    dataCovidQuery.refetch().then(() => {
+      onChange(dataCovidQuery.data);
+    });
 
-  const updateData = async () => {
-    await monthQuery.refetch();
-    await dataCovidQuery.refetch();
-    await dataCovidQuery.refetch();
-
-    setRegions(regionsQuery.data);
-    setMonths(monthQuery.data);
-    onChange(dataCovidQuery.data);
     changeData(
       !monthQuery.isError ||
         !regionsQuery.isError ||
@@ -114,7 +101,16 @@ export const Filter = ({
     onError(
       dataCovidQuery.isError || regionsQuery.isError || monthQuery.isError
     );
-  };
+  }, [
+    genderFilter,
+    monthFilter,
+    ageFilter,
+    yearFilter,
+    regionFilter,
+    regionsQuery.data,
+    monthQuery.data,
+    dataCovidQuery.data,
+  ]);
 
   const toggleMonth = () => setDropdownOpenMonth((prevState) => !prevState);
 
@@ -164,33 +160,41 @@ export const Filter = ({
 
   function MonthsSelect(props) {
     const months = props.months;
-    const listMonths = months.map((month) => {
-      return (
-        <DropdownItem
-          key={months.indexOf(month) + 1}
-          onClick={handleMonthFilter}
-          value={month}
-        >
-          {month === "" ? "All Month" : month}
-        </DropdownItem>
-      );
-    });
+    let listMonths = [""];
+    if (months !== undefined) {
+      listMonths = months.map((month) => {
+        return (
+          <DropdownItem
+            key={months.indexOf(month) + 1}
+            onClick={handleMonthFilter}
+            value={month}
+          >
+            {month === "" ? "All Month" : month}
+          </DropdownItem>
+        );
+      });
+    }
     return <DropdownMenu>{listMonths}</DropdownMenu>;
   }
 
   function RegionsSelect(props) {
     const regions = props.regions;
-    const listRegions = regions.map((region) => {
-      return (
-        <DropdownItem
-          key={regions.indexOf(region) + 1}
-          onClick={handleRegionFilter}
-          value={region}
-        >
-          {region === "" ? "All Region" : region}
-        </DropdownItem>
-      );
-    });
+
+    let listRegions = [""];
+    if (regions !== undefined) {
+      listRegions = regions.map((region) => {
+        return (
+          <DropdownItem
+            key={regions.indexOf(region) + 1}
+            onClick={handleRegionFilter}
+            value={region}
+          >
+            {region === "" ? "All Region" : region}
+          </DropdownItem>
+        );
+      });
+    }
+
     return <DropdownMenu>{listRegions}</DropdownMenu>;
   }
 
@@ -249,7 +253,7 @@ export const Filter = ({
                 <h2>Mois</h2>
                 <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
                   <DropdownToggle caret> {monthFilter}</DropdownToggle>
-                  <MonthsSelect months={months} />
+                  {!monthQuery.isLoading && <MonthsSelect months={months} />}
                 </Dropdown>
               </Col>
               <Col>
@@ -272,7 +276,9 @@ export const Filter = ({
                 <h2>Region</h2>
                 <Dropdown isOpen={dropdownOpenRegion} toggle={toggleRegion}>
                   <DropdownToggle caret> {regionFilter}</DropdownToggle>
-                  <RegionsSelect regions={regions} />
+                  {!regionsQuery.isLoading && (
+                    <RegionsSelect regions={regions} />
+                  )}
                 </Dropdown>
               </Col>
             </Row>
