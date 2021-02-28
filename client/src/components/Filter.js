@@ -17,6 +17,8 @@ import {
   fetchRegions,
 } from "./lib/fetchDataServer";
 import configServer from "../configServer.json";
+import regionData from './../regionData.json';
+import googleApi from './../googleApi.json';
 import { useQuery } from "react-query";
 
 const serverUrl =
@@ -94,16 +96,16 @@ export const Filter = ({
 
     changeData(
       !monthQuery.isError ||
-        !regionsQuery.isError ||
-        !monthQuery.isLoading ||
-        !regionsQuery.isLoading ||
-        !dataCovidQuery.isError ||
-        !dataCovidQuery.isLoading
+      !regionsQuery.isError ||
+      !monthQuery.isLoading ||
+      !regionsQuery.isLoading ||
+      !dataCovidQuery.isError ||
+      !dataCovidQuery.isLoading
     );
     onLoadingData(
       !regionsQuery.isLoading ||
-        !monthQuery.isLoading ||
-        !dataCovidQuery.isLoading
+      !monthQuery.isLoading ||
+      !dataCovidQuery.isLoading
     );
     onError(
       dataCovidQuery.isError || regionsQuery.isError || monthQuery.isError
@@ -144,9 +146,33 @@ export const Filter = ({
     setMonthFilter("");
   };
 
-  const handleRegionFilter = async (e) => {
-    setRegionFilter(e.target.value);
+  const handleRegionFilter = async (e, regionNumber) => {
+    if (e) setRegionFilter(e.target.value);
+    else setRegionFilter(regionNumber);
   };
+
+  const handleDetectRegion = async () => {
+    if (navigator.geolocation) {
+      let geolocation = {};
+      navigator.geolocation.getCurrentPosition(position => {
+        geolocation.lat = position.coords.latitude;
+        geolocation.lng = position.coords.longitude;
+        fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${geolocation.lat},${geolocation.lng}&key=${googleApi.apiKey}&result_type=administrative_area_level_1`)
+          .then(response => response.json())
+          .then(result => {
+            const regionNumber = regionData[result.results[0].address_components[0].long_name];
+            if (regionNumber) {
+              handleRegionFilter(undefined, regionNumber);
+            } else {
+              console.log('Location not supported')
+            }
+          })
+          .catch(err => console.log(err))
+      });
+    } else {
+      alert('Geolocation not supported by your browser')
+    }
+  }
 
   function GendersButton(props) {
     const genders = props.genders;
@@ -250,7 +276,11 @@ export const Filter = ({
                   <AgeSelect />
                 </Dropdown>
               </Col>
+              <Col className='align-self-center'>
+                <Button color="primary" onClick={handleDetectRegion}>Détecter région</Button>
+              </Col>
             </Row>
+
 
             <Row>
               <Col>
