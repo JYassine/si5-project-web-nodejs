@@ -11,7 +11,11 @@ import {
 } from "reactstrap";
 import { Row, Col } from "reactstrap";
 import "./Filter.scss";
-import axios from "axios";
+import {
+  fetchDataCovid,
+  fetchMonths,
+  fetchRegions,
+} from "./lib/fetchDataServer";
 import configServer from "../configServer.json";
 import { useQuery } from "react-query";
 
@@ -28,7 +32,6 @@ export const Filter = ({
   onError,
 }) => {
   const [dropdownOpenMonth, setDropdownOpenMonth] = useState(false);
-  const [months, setMonths] = useState([""]);
   const [dropdownOpenYear, setDropdownOpenYear] = useState(false);
   const [dropdownOpenRegion, setDropdownOpenRegion] = useState(false);
   const [dropdownOpenAge, setDropdownOpenAge] = useState(false);
@@ -38,74 +41,26 @@ export const Filter = ({
   const [ageFilter, setAgeFilter] = useState(0);
   const [yearFilter, setYearFilter] = useState(2020);
   const [regions, setRegions] = useState([""]);
-  const fetchRegions = async () => {
-    let queryAllRegions = "/regions";
+  const [months, setMonths] = useState([""]);
 
-    console.log(serverUrl + "" + queryAllRegions);
-    const allRegions = await axios
-      .get(serverUrl + "" + queryAllRegions)
-      .catch((err) => {
-        throw Error(err);
-      });
-    allRegions.data.push("");
-    return allRegions.data;
-  };
-  const fetchMonths = async () => {
-    let queryAllMonths = "/months/" + yearFilter;
+  const monthQuery = useQuery(["fetchMonthsKey"], () =>
+    fetchMonths(serverUrl, yearFilter)
+  );
 
-    console.log(serverUrl + "" + queryAllMonths);
-    const allMonths = await axios
-      .get(serverUrl + "" + queryAllMonths)
-      .catch((err) => {
-        throw Error(err);
-      });
-    allMonths.data.push("");
-    return allMonths.data;
-  };
-  const fetchDataCovid = async () => {
-    let result = undefined;
-    let filter =
-      "?gender=" +
-      genderFilter +
-      "&month=" +
-      monthFilter +
-      "&age=" +
-      ageFilter +
-      "&year=" +
-      yearFilter +
-      "&region=" +
-      regionFilter;
-    console.log(serverUrl + "" + filter);
-    result = await axios.get(serverUrl + "" + filter).catch((err) => {
-      throw Error(err);
-    });
+  const regionsQuery = useQuery(["fetchRegionsQuery"], () =>
+    fetchRegions(serverUrl)
+  );
 
-    result.data.forEach((data) => {
-      if (data.P_h) {
-        data.P_h = parseInt(data.P_h);
-      }
-      if (data.P_f) {
-        data.P_f = parseInt(data.P_f);
-      }
-      if (data.P) {
-        data.P = parseInt(data.P);
-        delete data.P_f;
-        delete data.P_h;
-      }
-    });
-    return result.data;
-  };
-  const monthQuery = useQuery(["fetchMonthsKey"], fetchMonths, {
-    manual: true,
-  });
-
-  const regionsQuery = useQuery(["fetchRegionsQuery"], fetchRegions, {
-    manual: true,
-  });
-
-  const dataCovidQuery = useQuery(["fetchDataCovidQuert"], fetchDataCovid, {
-    manual: true,
-  });
+  const dataCovidQuery = useQuery(["fetchDataCovidQuery"], () =>
+    fetchDataCovid(
+      serverUrl,
+      genderFilter,
+      monthFilter,
+      ageFilter,
+      yearFilter,
+      regionFilter
+    )
+  );
   const classAges = [
     { age: 0, text: "All age" },
     { age: 19, text: "10-19" },
@@ -119,18 +74,30 @@ export const Filter = ({
     { age: 90, text: "90+" },
   ];
 
-  useEffect(async () => {
+  useEffect(() => {
+    const update = async () => {
+      updateData();
+    };
+    update();
+  }, [
+    genderFilter,
+    monthFilter,
+    ageFilter,
+    yearFilter,
+    regionFilter,
+    regionsQuery.data,
+    monthQuery.data,
+    dataCovidQuery.data,
+  ]);
+
+  const updateData = async () => {
     await monthQuery.refetch();
     await dataCovidQuery.refetch();
     await dataCovidQuery.refetch();
 
-    try {
-      setRegions(regionsQuery.data);
-      setMonths(monthQuery.data);
-      onChange(dataCovidQuery.data);
-    } catch (err) {
-      console.error(err);
-    }
+    setRegions(regionsQuery.data);
+    setMonths(monthQuery.data);
+    onChange(dataCovidQuery.data);
     changeData(
       !monthQuery.isError ||
         !regionsQuery.isError ||
@@ -147,16 +114,7 @@ export const Filter = ({
     onError(
       dataCovidQuery.isError || regionsQuery.isError || monthQuery.isError
     );
-  }, [
-    genderFilter,
-    monthFilter,
-    ageFilter,
-    yearFilter,
-    regionFilter,
-    regionsQuery.data,
-    monthQuery.data,
-    dataCovidQuery.data,
-  ]);
+  };
 
   const toggleMonth = () => setDropdownOpenMonth((prevState) => !prevState);
 
@@ -258,13 +216,13 @@ export const Filter = ({
           <CardBody>
             <Row>
               <Col>
-                <h1>Filter</h1>
+                <h1>Filtre</h1>
               </Col>
             </Row>
 
             <Row>
               <Col>
-                <h2>Gender</h2>
+                <h2>Sexe</h2>
               </Col>
               <Col>
                 <GendersButton
@@ -288,30 +246,22 @@ export const Filter = ({
 
             <Row>
               <Col>
-                <h2>Month</h2>
+                <h2>Mois</h2>
                 <Dropdown isOpen={dropdownOpenMonth} toggle={toggleMonth}>
                   <DropdownToggle caret> {monthFilter}</DropdownToggle>
                   <MonthsSelect months={months} />
                 </Dropdown>
               </Col>
               <Col>
-                <h2>Year</h2>
+                <h2>Année</h2>
                 <Dropdown isOpen={dropdownOpenYear} toggle={toggleYear}>
                   <DropdownToggle caret> {yearFilter}</DropdownToggle>
                   <DropdownMenu>
-                    <DropdownItem
-                      key={1}
-                      onClick={handleYearFilter}
-                      value={2020}
-                    >
+                    <DropdownItem onClick={handleYearFilter} value={2020}>
                       {2020}
                     </DropdownItem>
 
-                    <DropdownItem
-                      key={2}
-                      onClick={handleYearFilter}
-                      value={2021}
-                    >
+                    <DropdownItem onClick={handleYearFilter} value={2021}>
                       {2021}
                     </DropdownItem>
                   </DropdownMenu>
