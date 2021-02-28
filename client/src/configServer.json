@@ -1,0 +1,4 @@
+{
+    "urlServer" : "http://localhost:4000/incidentRates",
+    "urlServerProd": "https://backend-dot-covidinfo-305912.ew.r.appspot.com/incidentRates"
+}

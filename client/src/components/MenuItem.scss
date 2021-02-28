@@ -1,0 +1,34 @@
+.menu-item {
+    align-items: center;
+    // justify-content: center;
+    padding: 2.2em 1em 2.2em 1em;
+    font-size: 1.2rem;
+    
+    &.light {
+        color: black;
+    }
+
+    &.light:hover {
+        background-color: #d2d3d4;
+    }
+
+    &.dark {
+        color: whitesmoke;
+    }
+
+    &.dark:hover {
+        background-color: #353b46;
+    }
+
+
+    &.closed #menu-text {
+        display: none;
+    }
+}
+
+#menu-text {
+    margin-left: 1em;
+}
+
+
+

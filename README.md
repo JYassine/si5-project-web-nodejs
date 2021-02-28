@@ -1,37 +1,93 @@
-# si5-project-web-nodejs
-# Travail à faire
+# si5-project-web-back-front-nodejs
 
-## Partie serveur : (NodeJs)
+# Summary
 
-- Sauvegarder les données dans une base mongo (cloud ou local)
-- Créer une API REST permettant de requêter le serveur node
-   - créer les routes 
-   - documenter les routes
-- Si c'est trop facile faire un module qui permet de mettre à jour la BDD toutes les 24h ^^
+- [si5-project-web-back-front-nodejs](#si5-project-web-back-front-nodejs)
+- [Summary](#summary)
+  - [Members of the team :](#members-of-the-team-)
+  - [Langages and tools required](#langages-and-tools-required)
+  - [How to run the project in local](#how-to-run-the-project-in-local)
+    - [1 - Run the back-end server](#1---run-the-back-end-server)
+    - [2 - Run our react app](#2---run-our-react-app)
+  - [Deployed version](#deployed-version)
+  - [How to test our REST API](#how-to-test-our-rest-api)
+    - [Route for incident rates in France :](#route-for-incident-rates-in-france-)
+    - [Query parameters :](#query-parameters-)
+    - [Examples :](#examples-)
 
-## Partie client : (ReactJS)
+## Members of the team :
 
-### Visualisation : Afficher les données en mode 
-- liste (Table)
-- graph
-- carte (google map ou MapBox ou autres)
+- JRAD Yassine
+- FALL Thierno
+- VASSEUR Adrien
 
+## Langages and tools required
 
-### Filtres : Offrir la possibilité d'affiner les résultats avec des filtres 
-Exemples : ville, département, tranche d’âge
+- [Node.js](https://nodejs.org/en/download/) v14.0+
+- [Npm](https://www.npmjs.com/get-npm)
+- [Mongodb](https://www.mongodb.com/try/download/community)
 
-### Thème : Possibilité pour l'utilisateur de changer le thème de l'application aux moins deux thèmes (un light et un dark) 
-Le choix sera sauvegardé, si je recharge la page le thème est le même.
-Si le thème du système d'exploitation de l'utilisateur et que le navigateur supporte l'API (match-media prefers-color-scheme) est en mode dark automatiquement proposé de changer de thème (via une modal)
+## How to run the project in local
 
-### HTML5 : Utilisé l'API du navigateur pour détecter la région et afficher les statistiques correspondantes 
+### 1 - Run the back-end server
 
+**$PROJECT_PATH** correspond to your directory
 
-### Afficher le nombre de cas confirmés en france par exemple (sur toutes les pages) rafraîchi régulièrement
+```sh
+$ git clone https://github.com/JYassine/si5-project-web-nodejs.git
+$ cd $PROJECT_PATH/server
+$ npm install
+$ npm start
+```
 
+### 2 - Run our react app
 
-## Règles sur le git :
+```sh
+$ cd $PROJECT_PATH/client
+$ npm install
+```  
 
-- Si vous travaillez sur une partie créer une nouvelle branche
-- Faites une pull request sur la branche dev en attendant qu'un membre approuve pour merge
+Then create a file called _googleApi.json_ in the /client/src directory with the following content:  
+```
+{
+  "apiKey": "AIzaSyDuLSAFR63flKRNNc9bpN5MQi2JwVRXytU"
+}
+```  
+This is the Google API key used for the Google Maps and Geocoding APIs.  
+Then run:  
+```sh
+$ npm start
+```  
 
+## Deployed version
+
+Visit https://covidinfo-305912.ew.r.appspot.com to access our project (deployed on GCP)  
+Backend service is hosted at https://backend-dot-covidinfo-305912.ew.r.appspot.com (to test API)
+
+## How to test our REST API
+
+_Be sure to run the back-end server before !_  
+Server runs at http://localhost:4000/
+
+### Route for incident rates in France :
+
+- GET /incidentRates
+
+### Query parameters :
+
+- age : represent the age class (0,09,19,29,39,49,59,69,89,90)
+- month : (01,02....,12)
+- gender : Male or female ("h" for male or "f" for female)
+- region : (01, 02...). To know the number for each region see [this link](https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise#Liste_et_caract%C3%A9ristiques_des_r%C3%A9gions_actuelles)  
+- year : (2020,2021)
+  
+
+### Examples :
+
+Get all positive tests for females at the month May in 2020
+
+- GET /incidentRates?gender=f&month=05&year=2020
+
+Get positive tests for males with age class 29 (between 20 and 29) and month January in 2021
+
+- GET /incidentRates?gender=h&month=01&age=29&year=2021
