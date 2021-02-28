@@ -276,8 +276,8 @@ export const Filter = ({
                   <AgeSelect />
                 </Dropdown>
               </Col>
-              <Col className='align-content-center justify-content-center' mb="auto" mt="auto">
-                <Button color="primary" mb="auto" mt="auto" onClick={handleDetectRegion}>Détecter région</Button>
+              <Col className='align-self-center'>
+                <Button color="primary" onClick={handleDetectRegion}>Détecter région</Button>
               </Col>
             </Row>
 
